@@ -1,0 +1,1928 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian Goods Co. — FP&amp;A Dashboard</title>
+<meta name="description" content="Multi-channel e-commerce FP&amp;A dashboard: gross-to-net bridge, unit economics, working capital and cash, with live accounting identity checks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<!--DATA-->
+<!--/DATA-->
+<style>
+:root{
+  --paper:#E7EBEE; --surface:#FFFFFF; --surface-2:#F3F6F8;
+  --ink:#13212B; --ink-2:#56697A; --ink-3:#8496A4;
+  --rule:#CBD5DC; --rule-2:#9FB0BC; --rule-3:#13212B;
+  --neg:#AE1C2E; --pos:#1C6A4C; --accent:#27497F; --ochre:#9C6A16;
+  --ch-shopify:#27497F; --ch-amazon:#9C6A16; --ch-ebay:#1C6A4C;
+  --strip:#13212B; --strip-ink:#DCE4EA;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --gut:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:14px; line-height:1.5; -webkit-text-size-adjust:100%;
+  padding-bottom:96px;
+}
+.mono,td.n,th.n,.kpi-v,.fig{font-family:var(--mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+button,select,input{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- header ---- */
+header{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--rule-3)}
+.masthead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;padding:12px var(--gut) 10px}
+.wordmark{font-family:var(--mono);font-weight:600;font-size:17px;letter-spacing:-.035em;margin:0}
+.wordmark span{color:var(--ink-3);font-weight:400}
+.sub{color:var(--ink-2);font-size:12.5px;margin-right:auto}
+.srcchip{font-family:var(--mono);font-size:11px;color:var(--ink-2);border:1px solid var(--rule);
+  border-radius:2px;padding:2px 7px;white-space:nowrap}
+.controls{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
+  padding:0 var(--gut) 11px;border-top:1px solid var(--rule)}
+.ctl{display:flex;align-items:center;gap:6px}
+.ctl label{font-size:12px;color:var(--ink-2)}
+select{background:var(--surface);border:1px solid var(--rule-2);border-radius:2px;padding:4px 6px;font-size:13px}
+.chips{display:flex;gap:0;border:1px solid var(--rule-2);border-radius:2px;overflow:hidden}
+.chips button{background:var(--surface);border:0;border-right:1px solid var(--rule);
+  padding:4px 9px;font-size:12px;font-family:var(--mono);color:var(--ink-2)}
+.chips button:last-child{border-right:0}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.toggle{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);
+  border:1px solid var(--rule-2);border-radius:2px;padding:4px 9px;background:var(--surface);margin-left:auto}
+.toggle[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+nav.tabs{display:flex;gap:0;overflow-x:auto;padding:0 var(--gut);border-top:1px solid var(--rule);
+  scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 13px 8px;
+  font-size:13px;color:var(--ink-2);white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+
+/* ---- layout ---- */
+main{padding:var(--gut) var(--gut) 8px;max-width:1440px;margin:0 auto}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:2px;margin-bottom:16px}
+.panel>h2{margin:0;padding:10px 14px;font-size:13px;font-weight:600;border-bottom:1px solid var(--rule);
+  display:flex;align-items:baseline;gap:10px}
+.panel>h2 em{font-style:normal;font-weight:400;color:var(--ink-2);font-size:12px}
+.panel .body{padding:14px}
+.grid{display:grid;gap:16px}
+@media(min-width:900px){.g2{grid-template-columns:1fr 1fr}.g23{grid-template-columns:2fr 1fr}}
+
+/* ---- kpis ---- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));border-top:1px solid var(--rule)}
+.kpi{padding:11px 14px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.kpi-l{font-size:11.5px;color:var(--ink-2);margin-bottom:5px}
+.kpi-v{font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.kpi-d{font-size:11.5px;color:var(--ink-2);margin-top:3px;font-family:var(--mono)}
+.formula{display:none;margin-top:7px;padding-top:6px;border-top:1px dotted var(--rule-2);
+  font-family:var(--mono);font-size:10.5px;line-height:1.45;color:var(--accent)}
+body.formulas .formula{display:block}
+
+/* ---- tables ---- */
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:5px 9px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
+thead th{font-weight:600;font-size:11.5px;color:var(--ink-2);border-bottom:1px solid var(--rule-2);
+  background:var(--surface);position:sticky;top:0}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.sub td{font-weight:600;background:var(--surface-2)}
+tr.tot td{font-weight:600;border-top:1px solid var(--rule-3);border-bottom:2px solid var(--rule-3)}
+td.name{position:sticky;left:0;background:var(--surface);z-index:1}
+tr.sub td.name{background:var(--surface-2)}
+.neg{color:var(--neg)}.pos{color:var(--pos)}
+.muted{color:var(--ink-2)}
+.ind{padding-left:22px}
+
+/* ---- charts ---- */
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:8px 14px 0;font-size:11.5px;color:var(--ink-2)}
+.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px}
+.note{font-size:11.5px;color:var(--ink-2);padding:10px 14px 0;line-height:1.55;max-width:74ch}
+
+/* ---- identity strip ---- */
+.strip{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--strip);color:var(--strip-ink);
+  border-top:2px solid #000;font-family:var(--mono);font-size:11.5px}
+.strip-head{display:flex;align-items:center;gap:10px;padding:5px var(--gut);border-bottom:1px solid #26384a;
+  font-size:10.5px;color:#8fa4b5;letter-spacing:.02em}
+.strip-head b{color:#fff;font-weight:600;letter-spacing:0}
+.strip-head button{margin-left:auto;background:none;border:1px solid #3a5165;color:#b9c9d6;
+  border-radius:2px;padding:2px 8px;font-size:10.5px;font-family:var(--mono)}
+.strip-rows{display:grid;grid-template-columns:1fr 1fr 1fr}
+.srow{padding:6px var(--gut) 7px;border-right:1px solid #26384a;display:flex;align-items:baseline;gap:8px;
+  overflow:hidden}
+.srow:last-child{border-right:0}
+.srow .tick{color:#5fd39b;font-weight:600}
+.srow .cross{color:#ff7a85;font-weight:600}
+.srow .lbl{color:#8fa4b5;flex:0 0 auto}
+.srow .eq{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dce4ea}
+.srow .d{margin-left:auto;flex:0 0 auto;color:#fff}
+body.strip-collapsed .strip-rows{display:none}
+@media(max-width:880px){
+  body{padding-bottom:150px}
+  .strip-rows{grid-template-columns:1fr}
+  .srow{border-right:0;border-bottom:1px solid #26384a}
+  .srow .eq{font-size:10.5px}
+}
+
+/* ---- inputs tab ---- */
+.io{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:2px;padding:6px 12px;font-size:13px}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.filerow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;padding:6px 0}
+.filerow strong{min-width:74px;font-weight:600}
+input[type=file]{font-size:12px;max-width:100%}
+input.cell{width:100px;border:1px solid transparent;background:none;text-align:right;
+  font-family:var(--mono);font-size:12px;padding:2px 4px;border-radius:2px}
+input.cell:hover{border-color:var(--rule)}
+input.cell:focus{border-color:var(--accent);background:#fff}
+.banner{border:1px solid var(--rule-2);border-left:3px solid var(--ochre);background:#FDF7EC;
+  padding:9px 12px;font-size:12.5px;margin-bottom:14px;border-radius:2px}
+.banner.bad{border-left-color:var(--neg);background:#FBEEF0}
+.banner.ok{border-left-color:var(--pos);background:#EEF6F2}
+.errtbl td{font-size:11.5px}
+h3.sec{font-size:12.5px;margin:18px 0 7px;font-weight:600}
+h3.sec:first-child{margin-top:0}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="masthead">
+    <h1 class="wordmark">MERIDIAN GOODS CO. <span>/ FP&amp;A</span></h1>
+    <span class="sub">Multi-channel consumer goods &middot; Shopify DTC, Amazon, eBay &middot; FY2025</span>
+    <span class="srcchip" id="src">Generated sample</span>
+  </div>
+  <div class="controls" id="controls"></div>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+</header>
+<main id="view"></main>
+<div class="strip" id="strip"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ============================================================
+   FP&A engine — primitives in, everything else derived.
+   No DOM access here, so it runs under node for testing.
+   ============================================================ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.FPA = factory();
+}(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var YEAR = 2025;
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var DAYS   = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+  var CHANNELS = [
+    { key: 'shopify', label: 'Shopify DTC', marketplace: false },
+    { key: 'amazon',  label: 'Amazon',      marketplace: true  },
+    { key: 'ebay',    label: 'eBay',        marketplace: true  }
+  ];
+
+  var SCENARIOS = [
+    { key: 'actual',   label: 'Actual'   },
+    { key: 'plan',     label: 'Plan'     },
+    { key: 'forecast', label: 'Forecast' }
+  ];
+
+  var CHANNEL_LINES = [
+    { key: 'grossSales',      label: 'Gross Sales',           kind: 'money' },
+    { key: 'returns',         label: 'Returns',               kind: 'money' },
+    { key: 'discounts',       label: 'Discounts',             kind: 'money' },
+    { key: 'marketplaceFees', label: 'Marketplace Fees',      kind: 'money' },
+    { key: 'paymentFees',     label: 'Payment Fees',          kind: 'money' },
+    { key: 'shipping',        label: 'Shipping & Fulfilment', kind: 'money' },
+    { key: 'cogs',            label: 'COGS',                  kind: 'money' },
+    { key: 'adSpend',         label: 'Ad Spend',              kind: 'money' },
+    { key: 'unsettled',       label: 'Unsettled Marketplace Balance', kind: 'balance' },
+    { key: 'orders',          label: 'Orders',                kind: 'count' },
+    { key: 'units',           label: 'Units',                 kind: 'count' },
+    { key: 'newCustomers',    label: 'New Customers',         kind: 'count' }
+  ];
+
+  var COMPANY_LINES = [
+    { key: 'purchases',          label: 'Purchases',           kind: 'money'   },
+    { key: 'accountsReceivable', label: 'Accounts Receivable', kind: 'balance' },
+    { key: 'accountsPayable',    label: 'Accounts Payable',    kind: 'balance' },
+    { key: 'opex',               label: 'Opex',                kind: 'money'   },
+    { key: 'capex',              label: 'Capex',               kind: 'money'   }
+  ];
+
+  var OPENING_LINES = [
+    { key: 'inventory', label: 'Opening Inventory' },
+    { key: 'cash',      label: 'Opening Cash' },
+    { key: 'ar',        label: 'Opening AR' },
+    { key: 'ap',        label: 'Opening AP' },
+    { key: 'unsettled', label: 'Opening Unsettled' }
+  ];
+
+  function zeros(n) { var a = [], i; for (i = 0; i < n; i++) a.push(0); return a; }
+  function sum(a) { var t = 0, i; for (i = 0; i < a.length; i++) t += a[i]; return t; }
+  function mean(a) { return a.length ? sum(a) / a.length : 0; }
+  function r2(x) { return Math.round(x * 100) / 100; }
+  function div(a, b) { return (b === 0 || !isFinite(b) || !isFinite(a)) ? 0 : a / b; }
+  function lcg(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function jitter(rnd, pct) { return 1 + (rnd() * 2 - 1) * pct; }
+
+  /* ---- sample generation ------------------------------------------------ */
+
+  var SEASON = [0.72, 0.68, 0.79, 0.81, 0.87, 0.84, 0.82, 0.90, 1.00, 1.16, 1.71, 1.50];
+
+  // returns and discounts are rates on gross sales; the cost lines are rates on net revenue
+  var CH_ASSUMPTIONS = {
+    shopify: { share: 0.47, asp: 45.30, upo: 1.90, newRate: 0.62, returns: 0.065, discounts: 0.090,
+               mktFee: 0.000, payFee: 0.026, ship: 0.090, cogs: 0.420, ad: 0.270, lagDays: 0 },
+    amazon:  { share: 0.39, asp: 38.50, upo: 1.35, newRate: 0.78, returns: 0.110, discounts: 0.040,
+               mktFee: 0.150, payFee: 0.000, ship: 0.140, cogs: 0.450, ad: 0.150, lagDays: 15 },
+    ebay:    { share: 0.14, asp: 42.70, upo: 1.50, newRate: 0.72, returns: 0.050, discounts: 0.030,
+               mktFee: 0.115, payFee: 0.005, ship: 0.080, cogs: 0.470, ad: 0.090, lagDays: 12 }
+  };
+
+  var GROSS_TARGET = 22000000;
+  // closing inventory path — drives purchases, so the build peaks in October
+  // and purchases collapse through November and December
+  var INV_PATH = [1720000, 1760000, 1830000, 1910000, 2020000, 2160000,
+                  2380000, 2650000, 2980000, 3180000, 3050000, 2300000];
+  var OPEN_INVENTORY = 1900000;
+  var DSO_DAYS = 9;
+  var DPO_DAYS = 45;
+  var OPEN_AR = 178000;
+  var OPEN_AP = 700000;
+  var OPEN_UNSETTLED = 305000;
+  var CASH_TROUGH_TARGET = 620000;
+
+  function blankChannelSet() {
+    var out = {}, i, j;
+    for (i = 0; i < CHANNELS.length; i++) {
+      out[CHANNELS[i].key] = {};
+      for (j = 0; j < CHANNEL_LINES.length; j++) out[CHANNELS[i].key][CHANNEL_LINES[j].key] = zeros(12);
+    }
+    return out;
+  }
+  function blankCompanySet() {
+    var out = {}, j;
+    for (j = 0; j < COMPANY_LINES.length; j++) out[COMPANY_LINES[j].key] = zeros(12);
+    return out;
+  }
+
+  function buildActual() {
+    var rnd = lcg(20250906);
+    var ch = blankChannelSet(), co = blankCompanySet();
+    var seasonSum = sum(SEASON), m, c, a, key;
+
+    for (c = 0; c < CHANNELS.length; c++) {
+      key = CHANNELS[c].key; a = CH_ASSUMPTIONS[key];
+      for (m = 0; m < 12; m++) {
+        var gross = GROSS_TARGET * a.share * (SEASON[m] / seasonSum) * jitter(rnd, 0.035);
+        var aspAdj = (m === 10 ? 0.965 : m === 11 ? 0.975 : 1) * jitter(rnd, 0.012);
+        var asp = a.asp * aspAdj;
+        var units = gross / asp;
+        var orders = units / (a.upo * jitter(rnd, 0.02));
+        var retRate = a.returns * (m === 0 ? 1.28 : 1) * jitter(rnd, 0.05);
+        var discRate = a.discounts * (m >= 9 ? 1.22 : 1) * jitter(rnd, 0.06);
+        var returns = gross * retRate, discounts = gross * discRate;
+        var net = gross - returns - discounts;
+
+        ch[key].grossSales[m]      = gross;
+        ch[key].returns[m]         = returns;
+        ch[key].discounts[m]       = discounts;
+        ch[key].marketplaceFees[m] = net * a.mktFee * jitter(rnd, 0.02);
+        ch[key].paymentFees[m]     = net * a.payFee * jitter(rnd, 0.02);
+        ch[key].shipping[m]        = net * a.ship * (m >= 9 ? 1.06 : 1) * jitter(rnd, 0.03);
+        ch[key].cogs[m]            = net * a.cogs * jitter(rnd, 0.02);
+        ch[key].adSpend[m]         = net * a.ad * (m >= 8 && m <= 10 ? 1.10 : 1) * jitter(rnd, 0.05);
+        ch[key].unsettled[m]       = a.lagDays ? net * (a.lagDays * (m === 10 ? 1.18 : 1) * jitter(rnd, 0.08)) / DAYS[m] : 0;
+        ch[key].orders[m]          = Math.round(orders);
+        ch[key].units[m]           = Math.round(units);
+        ch[key].newCustomers[m]    = Math.round(orders * a.newRate * jitter(rnd, 0.03));
+      }
+    }
+
+    var priorPurchases = 520000;
+    for (m = 0; m < 12; m++) {
+      var cogsM = 0, netM = 0, dtcNet = 0;
+      for (c = 0; c < CHANNELS.length; c++) {
+        key = CHANNELS[c].key;
+        cogsM += ch[key].cogs[m];
+        var n = ch[key].grossSales[m] - ch[key].returns[m] - ch[key].discounts[m];
+        netM += n;
+        if (!CHANNELS[c].marketplace) dtcNet += n;
+      }
+      var openInv = (m === 0) ? OPEN_INVENTORY : INV_PATH[m - 1];
+      co.purchases[m] = INV_PATH[m] - openInv + cogsM;
+      co.accountsReceivable[m] = dtcNet * (DSO_DAYS * jitter(rnd, 0.06)) / DAYS[m];
+      var spill = (m === 0 ? priorPurchases : co.purchases[m - 1]);
+      var frac = Math.max(0, (DPO_DAYS - DAYS[m]) / DAYS[m]);
+      co.accountsPayable[m] = (co.purchases[m] + spill * frac) * jitter(rnd, 0.03);
+      co.opex[m] = (115000 + netM * 0.028) * jitter(rnd, 0.02);
+      co.capex[m] = [15000, 10000, 28000, 13000, 18000, 34000,
+                     45000, 31000, 21000, 16000, 12000, 20000][m];
+    }
+    return { channel: ch, company: co };
+  }
+
+  var PLAN_SHIFT = {
+    units: 1 / 1.040,   // Actual ran 4.0% ahead of Plan on units
+    asp: 1.036,         // Actual ASP landed 3.5% short of Plan
+    returns: 0.955, discounts: 0.928, mktFee: 0.995, payFee: 1.0,
+    ship: 0.981, cogs: 0.990, ad: 0.967, opex: 0.988, capex: 1.0
+  };
+
+  function shiftScenario(actual, s) {
+    var ch = blankChannelSet(), co = blankCompanySet(), c, m, key;
+    for (c = 0; c < CHANNELS.length; c++) {
+      key = CHANNELS[c].key;
+      var A = actual.channel[key], P = ch[key];
+      for (m = 0; m < 12; m++) {
+        var aGross = A.grossSales[m];
+        var units = A.units[m] * s.units;
+        var asp = div(aGross, A.units[m]) * s.asp;
+        var gross = units * asp;
+        var scale = div(gross, aGross);
+        function rate(line, mult) { return div(A[line][m], aGross) * mult * gross; }
+        P.grossSales[m]      = gross;
+        P.returns[m]         = rate('returns', s.returns);
+        P.discounts[m]       = rate('discounts', s.discounts);
+        P.marketplaceFees[m] = rate('marketplaceFees', s.mktFee);
+        P.paymentFees[m]     = rate('paymentFees', s.payFee);
+        P.shipping[m]        = rate('shipping', s.ship);
+        P.cogs[m]            = rate('cogs', s.cogs);
+        P.adSpend[m]         = rate('adSpend', s.ad);
+        P.unsettled[m]       = A.unsettled[m] * scale;
+        P.units[m]           = Math.round(units);
+        P.orders[m]          = Math.round(A.orders[m] * s.units);
+        P.newCustomers[m]    = Math.round(A.newCustomers[m] * s.units);
+      }
+    }
+    for (m = 0; m < 12; m++) {
+      var cogsM = 0, aCogsM = 0;
+      for (c = 0; c < CHANNELS.length; c++) {
+        cogsM += ch[CHANNELS[c].key].cogs[m];
+        aCogsM += actual.channel[CHANNELS[c].key].cogs[m];
+      }
+      co.purchases[m] = actual.company.purchases[m] - aCogsM + cogsM;
+      co.accountsReceivable[m] = actual.company.accountsReceivable[m] *
+        div(ch.shopify.grossSales[m], actual.channel.shopify.grossSales[m]);
+      co.accountsPayable[m] = actual.company.accountsPayable[m] *
+        div(co.purchases[m], actual.company.purchases[m]);
+      co.opex[m] = actual.company.opex[m] * s.opex;
+      co.capex[m] = actual.company.capex[m] * s.capex;
+    }
+    return { channel: ch, company: co };
+  }
+
+  function buildForecast(actual) {
+    // Reforecast cut at the end of June: H1 is Actual, H2 lands a shade better
+    var ch = blankChannelSet(), co = blankCompanySet(), c, m, j, key;
+    for (c = 0; c < CHANNELS.length; c++) {
+      key = CHANNELS[c].key;
+      var A = actual.channel[key], F = ch[key];
+      for (m = 0; m < 12; m++) {
+        if (m < 6) {
+          for (j = 0; j < CHANNEL_LINES.length; j++) F[CHANNEL_LINES[j].key][m] = A[CHANNEL_LINES[j].key][m];
+        } else {
+          var aGross = A.grossSales[m], gross = aGross * 1.014, scale = 1.014;
+          F.grossSales[m]      = gross;
+          F.returns[m]         = div(A.returns[m], aGross) * gross;
+          F.discounts[m]       = div(A.discounts[m], aGross) * 0.955 * gross;
+          F.marketplaceFees[m] = div(A.marketplaceFees[m], aGross) * gross;
+          F.paymentFees[m]     = div(A.paymentFees[m], aGross) * gross;
+          F.shipping[m]        = div(A.shipping[m], aGross) * 0.985 * gross;
+          F.cogs[m]            = div(A.cogs[m], aGross) * gross;
+          F.adSpend[m]         = div(A.adSpend[m], aGross) * 0.965 * gross;
+          F.unsettled[m]       = A.unsettled[m] * scale;
+          F.units[m]           = Math.round(A.units[m] * scale);
+          F.orders[m]          = Math.round(A.orders[m] * scale);
+          F.newCustomers[m]    = Math.round(A.newCustomers[m] * scale);
+        }
+      }
+    }
+    for (m = 0; m < 12; m++) {
+      var cogsM = 0, aCogsM = 0;
+      for (c = 0; c < CHANNELS.length; c++) {
+        cogsM += ch[CHANNELS[c].key].cogs[m];
+        aCogsM += actual.channel[CHANNELS[c].key].cogs[m];
+      }
+      co.purchases[m] = actual.company.purchases[m] - aCogsM + cogsM;
+      co.accountsReceivable[m] = actual.company.accountsReceivable[m] *
+        div(ch.shopify.grossSales[m], actual.channel.shopify.grossSales[m]);
+      co.accountsPayable[m] = actual.company.accountsPayable[m] *
+        div(co.purchases[m], actual.company.purchases[m]);
+      co.opex[m] = actual.company.opex[m] * (m < 6 ? 1 : 0.99);
+      co.capex[m] = actual.company.capex[m];
+    }
+    return { channel: ch, company: co };
+  }
+
+  function roundDataset(d) {
+    var c, m, j, key;
+    for (c = 0; c < CHANNELS.length; c++) {
+      key = CHANNELS[c].key;
+      for (j = 0; j < CHANNEL_LINES.length; j++) {
+        var L = CHANNEL_LINES[j];
+        for (m = 0; m < 12; m++) {
+          d.channel[key][L.key][m] = (L.kind === 'count')
+            ? Math.round(d.channel[key][L.key][m]) : r2(d.channel[key][L.key][m]);
+        }
+      }
+    }
+    for (j = 0; j < COMPANY_LINES.length; j++)
+      for (m = 0; m < 12; m++) d.company[COMPANY_LINES[j].key][m] = r2(d.company[COMPANY_LINES[j].key][m]);
+    return d;
+  }
+
+  function generateSample() {
+    var actual = roundDataset(buildActual());
+    var plan = roundDataset(shiftScenario(actual, PLAN_SHIFT));
+    var forecast = roundDataset(buildForecast(actual));
+    var opening = { inventory: OPEN_INVENTORY, cash: 0, ar: OPEN_AR, ap: OPEN_AP, unsettled: OPEN_UNSETTLED };
+
+    // opening cash set so the Actual path troughs at the target
+    var probe = { opening: opening, scenarios: { actual: actual, plan: plan, forecast: forecast } };
+    var d = derive(probe, 'actual'), lo = Infinity, m;
+    for (m = 0; m < 12; m++) lo = Math.min(lo, d.months[m].cashClose);
+    opening.cash = Math.round((CASH_TROUGH_TARGET - lo) / 10000) * 10000;
+
+    return {
+      meta: { source: 'sample', label: 'Meridian Goods Co.', year: YEAR },
+      opening: opening,
+      scenarios: { actual: actual, plan: plan, forecast: forecast }
+    };
+  }
+
+  /* ---- derivation ------------------------------------------------------- */
+
+  function derive(data, scenarioKey) {
+    var S = data.scenarios[scenarioKey], open = data.opening;
+    var months = [], channels = {}, c, m, key;
+    for (c = 0; c < CHANNELS.length; c++) channels[CHANNELS[c].key] = [];
+    var inv = open.inventory, cash = open.cash;
+
+    for (m = 0; m < 12; m++) {
+      var row = { m: m, name: MONTHS[m], days: DAYS[m],
+        grossSales: 0, returns: 0, discounts: 0, netRevenue: 0, marketplaceFees: 0,
+        paymentFees: 0, shipping: 0, cogs: 0, adSpend: 0, contribution: 0,
+        orders: 0, units: 0, newCustomers: 0, unsettled: 0, marketplaceNet: 0, dtcNet: 0 };
+
+      for (c = 0; c < CHANNELS.length; c++) {
+        key = CHANNELS[c].key;
+        var s = S.channel[key];
+        var net = s.grossSales[m] - s.returns[m] - s.discounts[m];
+        var contribution = net - s.marketplaceFees[m] - s.paymentFees[m] - s.shipping[m] - s.cogs[m] - s.adSpend[m];
+        var cr = { m: m, name: MONTHS[m], channel: key,
+          grossSales: s.grossSales[m], returns: s.returns[m], discounts: s.discounts[m], netRevenue: net,
+          marketplaceFees: s.marketplaceFees[m], paymentFees: s.paymentFees[m], shipping: s.shipping[m],
+          cogs: s.cogs[m], adSpend: s.adSpend[m], contribution: contribution,
+          orders: s.orders[m], units: s.units[m], newCustomers: s.newCustomers[m], unsettled: s.unsettled[m] };
+        channels[key].push(cr);
+        row.grossSales += cr.grossSales; row.returns += cr.returns; row.discounts += cr.discounts;
+        row.netRevenue += net; row.marketplaceFees += cr.marketplaceFees; row.paymentFees += cr.paymentFees;
+        row.shipping += cr.shipping; row.cogs += cr.cogs; row.adSpend += cr.adSpend;
+        row.contribution += contribution; row.orders += cr.orders; row.units += cr.units;
+        row.newCustomers += cr.newCustomers; row.unsettled += cr.unsettled;
+        if (CHANNELS[c].marketplace) row.marketplaceNet += net; else row.dtcNet += net;
+      }
+
+      row.opex = S.company.opex[m];
+      row.capex = S.company.capex[m];
+      row.purchases = S.company.purchases[m];
+      row.ebitda = row.contribution - row.opex;
+
+      row.invOpen = inv;
+      row.invClose = inv + row.purchases - row.cogs;      // identity 1, by construction
+      inv = row.invClose;
+
+      row.arOpen = (m === 0) ? open.ar : S.company.accountsReceivable[m - 1];
+      row.ar = S.company.accountsReceivable[m];
+      row.apOpen = (m === 0) ? open.ap : S.company.accountsPayable[m - 1];
+      row.ap = S.company.accountsPayable[m];
+      row.unsettledOpen = (m === 0) ? open.unsettled : months[m - 1].unsettled;
+
+      row.dInventory = row.invClose - row.invOpen;
+      row.dAR = row.ar - row.arOpen;
+      row.dAP = row.ap - row.apOpen;
+      row.dUnsettled = row.unsettled - row.unsettledOpen;
+      row.marketplaceRemittance = row.marketplaceNet - row.dUnsettled;
+
+      row.fcf = row.ebitda - row.dInventory - row.dAR - row.dUnsettled + row.dAP - row.capex;
+      row.cashOpen = cash;
+      row.cashClose = cash + row.fcf;                     // identity 3, by construction
+      cash = row.cashClose;
+      months.push(row);
+    }
+    return { scenario: scenarioKey, months: months, channels: channels, opening: open };
+  }
+
+  var FLOW_KEYS = ['grossSales','returns','discounts','netRevenue','marketplaceFees','paymentFees',
+    'shipping','cogs','adSpend','contribution','opex','ebitda','purchases','capex','orders','units',
+    'newCustomers','fcf','marketplaceNet','dtcNet','marketplaceRemittance','dInventory','dAR','dAP','dUnsettled'];
+
+  function aggregate(d, m0, m1) {
+    var t = {}, i, m;
+    for (i = 0; i < FLOW_KEYS.length; i++) t[FLOW_KEYS[i]] = 0;
+    var days = 0;
+    var invPts = [d.months[m0].invOpen], arPts = [d.months[m0].arOpen],
+        apPts = [d.months[m0].apOpen], unPts = [d.months[m0].unsettledOpen];
+    for (m = m0; m <= m1; m++) {
+      var r = d.months[m];
+      for (i = 0; i < FLOW_KEYS.length; i++) t[FLOW_KEYS[i]] += r[FLOW_KEYS[i]];
+      days += r.days;
+      invPts.push(r.invClose); arPts.push(r.ar); apPts.push(r.ap); unPts.push(r.unsettled);
+    }
+    t.days = days; t.monthCount = m1 - m0 + 1; t.m0 = m0; t.m1 = m1;
+    t.invOpen = d.months[m0].invOpen;   t.invClose = d.months[m1].invClose;
+    t.arOpen = d.months[m0].arOpen;     t.arClose = d.months[m1].ar;
+    t.apOpen = d.months[m0].apOpen;     t.apClose = d.months[m1].ap;
+    t.unsettledOpen = d.months[m0].unsettledOpen; t.unsettledClose = d.months[m1].unsettled;
+    t.cashOpen = d.months[m0].cashOpen; t.cashClose = d.months[m1].cashClose;
+
+    // average balances, not closing — a seasonal business closes December lean
+    t.avgInventory = mean(invPts); t.avgAR = mean(arPts);
+    t.avgAP = mean(apPts);         t.avgUnsettled = mean(unPts);
+
+    t.dio = div(t.avgInventory, t.cogs) * days;
+    t.dso = div(t.avgAR, t.dtcNet) * days;
+    t.dpo = div(t.avgAP, t.purchases) * days;
+    t.settlementLag = div(t.avgUnsettled, t.marketplaceRemittance) * days;
+    t.ccc = t.dio + t.dso + t.settlementLag - t.dpo;
+
+    t.returnRate = div(t.returns, t.grossSales);
+    t.discountRate = div(t.discounts, t.grossSales);
+    t.contributionMargin = div(t.contribution, t.netRevenue);
+    t.ebitdaMargin = div(t.ebitda, t.netRevenue);
+    t.grossMarginPct = div(t.netRevenue - t.cogs, t.netRevenue);
+    t.aov = div(t.grossSales, t.orders);
+    t.asp = div(t.grossSales, t.units);
+    t.unitsPerOrder = div(t.units, t.orders);
+    t.cac = div(t.adSpend, t.newCustomers);
+    t.contributionPerOrder = div(t.contribution, t.orders);
+    t.fcfConversion = div(t.fcf, t.ebitda);
+    t.weeksOfCover = div(t.avgInventory, div(t.cogs, days)) / 7;
+    t.feeRate = div(t.marketplaceFees + t.paymentFees, t.netRevenue);
+    return t;
+  }
+
+  function aggregateChannel(d, channelKey, m0, m1) {
+    var rows = d.channels[channelKey], t = {}, m, i;
+    var keys = ['grossSales','returns','discounts','netRevenue','marketplaceFees','paymentFees',
+      'shipping','cogs','adSpend','contribution','orders','units','newCustomers'];
+    for (i = 0; i < keys.length; i++) t[keys[i]] = 0;
+    var unPts = [];
+    for (m = m0; m <= m1; m++) {
+      for (i = 0; i < keys.length; i++) t[keys[i]] += rows[m][keys[i]];
+      unPts.push(rows[m].unsettled);
+    }
+    t.unsettledClose = rows[m1].unsettled;
+    t.avgUnsettled = mean(unPts);
+    t.contributionMargin = div(t.contribution, t.netRevenue);
+    t.returnRate = div(t.returns, t.grossSales);
+    t.discountRate = div(t.discounts, t.grossSales);
+    t.aov = div(t.grossSales, t.orders);
+    t.asp = div(t.grossSales, t.units);
+    t.unitsPerOrder = div(t.units, t.orders);
+    t.cac = div(t.adSpend, t.newCustomers);
+    t.contributionPerOrder = div(t.contribution, t.orders);
+    t.feeRate = div(t.marketplaceFees + t.paymentFees, t.netRevenue);
+    t.shipRate = div(t.shipping, t.netRevenue);
+    t.cogsRate = div(t.cogs, t.netRevenue);
+    t.adRate = div(t.adSpend, t.netRevenue);
+    t.netShare = 0;
+    return t;
+  }
+
+  /* ---- the three identities --------------------------------------------- */
+
+  function identities(d, m0, m1) {
+    var t = aggregate(d, m0, m1);
+    return [
+      { key: 'inventory', label: 'Inventory roll-forward',
+        terms: [ { label: 'opening', value: t.invOpen, op: '' },
+                 { label: 'purchases', value: t.purchases, op: '+' },
+                 { label: 'COGS', value: t.cogs, op: '\u2212' } ],
+        expect: t.invClose, expectLabel: 'closing',
+        delta: (t.invOpen + t.purchases - t.cogs) - t.invClose },
+      { key: 'pl', label: 'Contribution to EBITDA',
+        terms: [ { label: 'contribution', value: t.contribution, op: '' },
+                 { label: 'opex', value: t.opex, op: '\u2212' } ],
+        expect: t.ebitda, expectLabel: 'EBITDA',
+        delta: (t.contribution - t.opex) - t.ebitda },
+      { key: 'cash', label: 'Cash roll-forward',
+        terms: [ { label: 'opening cash', value: t.cashOpen, op: '' },
+                 { label: 'free cash flow', value: t.fcf, op: '+' } ],
+        expect: t.cashClose, expectLabel: 'closing cash',
+        delta: (t.cashOpen + t.fcf) - t.cashClose }
+    ];
+  }
+
+  /* ---- variance decomposition -------------------------------------------
+     Sequential and order-fixed, so the three effects sum to the total with no
+     residual by construction:
+       volume = (Ua - Up) * Pp * Rp
+       price  =  Ua * (Pa - Pp) * Rp
+       rate   =  Ua *  Pa * (Ra - Rp)
+     ---------------------------------------------------------------------- */
+
+  var VARIANCE_LINES = [
+    { key: 'grossSales',      label: 'Gross Sales',           sign: +1, hasRate: false },
+    { key: 'returns',         label: 'Returns',               sign: -1, hasRate: true },
+    { key: 'discounts',       label: 'Discounts',             sign: -1, hasRate: true },
+    { key: 'marketplaceFees', label: 'Marketplace Fees',      sign: -1, hasRate: true },
+    { key: 'paymentFees',     label: 'Payment Fees',          sign: -1, hasRate: true },
+    { key: 'shipping',        label: 'Shipping & Fulfilment', sign: -1, hasRate: true },
+    { key: 'cogs',            label: 'COGS',                  sign: -1, hasRate: true },
+    { key: 'adSpend',         label: 'Ad Spend',              sign: -1, hasRate: true }
+  ];
+
+  function splitLine(act, plan, lineKey, hasRate) {
+    var Ua = act.units, Up = plan.units;
+    var Pa = div(act.grossSales, act.units), Pp = div(plan.grossSales, plan.units);
+    var Ra = hasRate ? div(act[lineKey], act.grossSales) : 1;
+    var Rp = hasRate ? div(plan[lineKey], plan.grossSales) : 1;
+    var volume = (Ua - Up) * Pp * Rp;
+    var price = Ua * (Pa - Pp) * Rp;
+    var rate = hasRate ? Ua * Pa * (Ra - Rp) : 0;
+    var total = act[lineKey] - plan[lineKey];
+    return { volume: volume, price: price, rate: rate, total: total,
+             residual: total - (volume + price + rate) };
+  }
+
+  function varianceTable(actAgg, planAgg) {
+    var rows = [], i, tot = { volume: 0, price: 0, rate: 0, total: 0, residual: 0 };
+    for (i = 0; i < VARIANCE_LINES.length; i++) {
+      var L = VARIANCE_LINES[i];
+      var s = splitLine(actAgg, planAgg, L.key, L.hasRate);
+      var row = { key: L.key, label: L.label, sign: L.sign,
+        volume: s.volume * L.sign, price: s.price * L.sign, rate: s.rate * L.sign,
+        total: s.total * L.sign, residual: s.residual * L.sign,
+        actual: actAgg[L.key], plan: planAgg[L.key] };
+      rows.push(row);
+      tot.volume += row.volume; tot.price += row.price; tot.rate += row.rate;
+      tot.total += row.total; tot.residual += row.residual;
+    }
+    var contribution = { key: 'contribution', label: 'Contribution Margin', subtotal: true,
+      volume: tot.volume, price: tot.price, rate: tot.rate, total: tot.total,
+      residual: (actAgg.contribution - planAgg.contribution) - tot.total,
+      actual: actAgg.contribution, plan: planAgg.contribution };
+    var opex = { key: 'opex', label: 'Opex', spendOnly: true, volume: 0, price: 0, rate: 0,
+      spend: -(actAgg.opex - planAgg.opex), total: -(actAgg.opex - planAgg.opex), residual: 0,
+      actual: actAgg.opex, plan: planAgg.opex };
+    var ebitda = { key: 'ebitda', label: 'EBITDA', subtotal: true,
+      volume: tot.volume, price: tot.price, rate: tot.rate, spend: opex.spend,
+      total: tot.total + opex.total,
+      residual: (actAgg.ebitda - planAgg.ebitda) - (tot.total + opex.total),
+      actual: actAgg.ebitda, plan: planAgg.ebitda };
+    return { rows: rows, contribution: contribution, opex: opex, ebitda: ebitda };
+  }
+
+  function bridge(agg) {
+    return [
+      { label: 'Gross Sales',      value: agg.grossSales,       type: 'start' },
+      { label: 'Returns',          value: -agg.returns,         type: 'delta' },
+      { label: 'Discounts',        value: -agg.discounts,       type: 'delta' },
+      { label: 'Net Revenue',      value: agg.netRevenue,       type: 'subtotal' },
+      { label: 'Marketplace Fees', value: -agg.marketplaceFees, type: 'delta' },
+      { label: 'Payment Fees',     value: -agg.paymentFees,     type: 'delta' },
+      { label: 'Shipping & Ful.',  value: -agg.shipping,        type: 'delta' },
+      { label: 'COGS',             value: -agg.cogs,            type: 'delta' },
+      { label: 'Ad Spend',         value: -agg.adSpend,         type: 'delta' },
+      { label: 'Contribution',     value: agg.contribution,     type: 'subtotal' },
+      { label: 'Opex',             value: -agg.opex,            type: 'delta' },
+      { label: 'EBITDA',           value: agg.ebitda,           type: 'end' }
+    ];
+  }
+
+  return {
+    YEAR: YEAR, MONTHS: MONTHS, DAYS: DAYS, CHANNELS: CHANNELS, SCENARIOS: SCENARIOS,
+    CHANNEL_LINES: CHANNEL_LINES, COMPANY_LINES: COMPANY_LINES, OPENING_LINES: OPENING_LINES,
+    VARIANCE_LINES: VARIANCE_LINES, generateSample: generateSample, derive: derive,
+    aggregate: aggregate, aggregateChannel: aggregateChannel, identities: identities,
+    varianceTable: varianceTable, splitLine: splitLine, bridge: bridge, div: div, sum: sum
+  };
+}));
+
+</script>
+<script>
+/* ============ UI core: state, formatting, SVG chart primitives ============ */
+var APP = (function () {
+  'use strict';
+  var F = FPA;
+
+  var state = {
+    data: null, derived: {}, scenario: 'actual', compare: 'plan',
+    m0: 0, m1: 11, tab: 'overview', formulas: false,
+    source: 'sample', sourceNote: '', storage: true, storageNote: '',
+    importErrors: null, narrow: false
+  };
+
+  /* ---- formatting ---- */
+  function money(x, dp) {
+    if (!isFinite(x)) x = 0;
+    var d = dp || 0, neg = x < -0.5 / Math.pow(10, d);
+    var s = Math.abs(x).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    return neg ? '(' + s + ')' : s;
+  }
+  function usd(x, dp) {
+    if (!isFinite(x)) x = 0;
+    var d = dp || 0, neg = x < 0;
+    var s = '$' + Math.abs(x).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    return neg ? '(' + s + ')' : s;
+  }
+  function compact(x) {
+    var a = Math.abs(x), s;
+    if (a >= 1e6) s = (x / 1e6).toFixed(a >= 1e7 ? 1 : 2) + 'M';
+    else if (a >= 1e3) s = Math.round(x / 1e3) + 'k';
+    else s = Math.round(x).toString();
+    return (x < 0 ? '(' + s.replace('-', '') + ')' : s);
+  }
+  function usdC(x) { return (x < 0 ? '($' : '$') + compact(Math.abs(x)) + (x < 0 ? ')' : ''); }
+  function pct(x, dp) { return (isFinite(x) ? (x * 100).toFixed(dp === undefined ? 1 : dp) : '0.0') + '%'; }
+  function pp(x, dp) { var v = x * 100; return (v >= 0 ? '+' : '\u2212') + Math.abs(v).toFixed(dp === undefined ? 1 : dp) + 'pt'; }
+  function days(x) { return (isFinite(x) ? x : 0).toFixed(1); }
+  function num(x) { return Math.round(x).toLocaleString('en-US'); }
+  function sign(x) { return x < 0 ? 'neg' : ''; }
+  function fav(x, goodIsUp) { var g = goodIsUp === false ? -x : x; return g > 0 ? 'pos' : g < 0 ? 'neg' : ''; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  /* ---- range helpers ---- */
+  function rangeLabel() {
+    return state.m0 === state.m1 ? F.MONTHS[state.m0] + ' ' + F.YEAR
+      : F.MONTHS[state.m0] + '\u2013' + F.MONTHS[state.m1] + ' ' + F.YEAR;
+  }
+  function labels() { return F.MONTHS.slice(state.m0, state.m1 + 1); }
+  function D(scn) { return state.derived[scn || state.scenario]; }
+  function agg(scn) { return F.aggregate(D(scn), state.m0, state.m1); }
+  function aggCh(ch, scn) { return F.aggregateChannel(D(scn), ch, state.m0, state.m1); }
+  function slice(scn) { return D(scn).months.slice(state.m0, state.m1 + 1); }
+  function sliceCh(ch, scn) { return D(scn).channels[ch].slice(state.m0, state.m1 + 1); }
+  function chColor(k) { return { shopify: '#27497F', amazon: '#9C6A16', ebay: '#1C6A4C' }[k]; }
+
+  /* ---- SVG primitives ----
+     Every chart is composed here by hand. viewBox units, CSS-scaled width. */
+
+  function svgOpen(w, h) {
+    return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '" role="img" ' +
+      'preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">';
+  }
+  function t(x, y, s, cls, anchor, size) {
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + (anchor || 'middle') +
+      '" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="' + (size || 10) + '" fill="' + (cls || '#56697A') + '">' +
+      esc(s) + '</text>';
+  }
+  function tt(x, y, s, cls, anchor, size, weight) {
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + (anchor || 'middle') +
+      '" font-family="IBM Plex Sans, system-ui, sans-serif" font-weight="' + (weight || 400) + '" font-size="' + (size || 10) +
+      '" fill="' + (cls || '#56697A') + '">' + esc(s) + '</text>';
+  }
+  function rect(x, y, w, h, fill, extra) {
+    if (h < 0) { y += h; h = -h; }
+    return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + Math.max(0, w).toFixed(1) +
+      '" height="' + Math.max(0.6, h).toFixed(1) + '" fill="' + fill + '"' + (extra || '') + '/>';
+  }
+  function line(x1, y1, x2, y2, stroke, w, dash) {
+    return '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' +
+      y2.toFixed(1) + '" stroke="' + stroke + '" stroke-width="' + (w || 1) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
+  }
+  function path(d, stroke, w, dash, fill) {
+    return '<path d="' + d + '" fill="' + (fill || 'none') + '" stroke="' + (stroke || 'none') +
+      '" stroke-width="' + (w || 1.6) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round"/>';
+  }
+
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    var e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e;
+    var m = f <= 1 ? 1 : f <= 1.5 ? 1.5 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+    return m * e;
+  }
+  function scaleY(lo, hi, y0, y1) {          // lo at the bottom (large y)
+    if (hi === lo) hi = lo + 1;
+    return function (v) { return y1 - (v - lo) / (hi - lo) * (y1 - y0); };
+  }
+  function scaleX(lo, hi, x0, x1) {          // lo at the left (small x)
+    if (hi === lo) hi = lo + 1;
+    return function (v) { return x0 + (v - lo) / (hi - lo) * (x1 - x0); };
+  }
+
+  function axis(g, lo, hi, y0, y1, x0, x1, fmt, steps) {
+    var n = steps || 4, out = '', i, v, y, sy = scaleY(lo, hi, y0, y1);
+    for (i = 0; i <= n; i++) {
+      v = lo + (hi - lo) * i / n; y = sy(v);
+      out += line(x0, y, x1, y, v === 0 ? '#9FB0BC' : '#CBD5DC', v === 0 ? 1.2 : 0.7);
+      out += t(x0 - 6, y + 3.2, fmt(v), '#8496A4', 'end', 9.5);
+    }
+    return out;
+  }
+
+  /* -- waterfall (vertical bars) -- */
+  function waterfall(steps, opt) {
+    opt = opt || {};
+    var W = opt.w || 1000, H = opt.h || 400;
+    var L = 64, R = 14, T = 26, B = 62;
+    var n = steps.length, bw = (W - L - R) / n * 0.62, gap = (W - L - R) / n;
+    var cum = 0, lo = 0, hi = 0, i, pts = [];
+    for (i = 0; i < n; i++) {
+      var s = steps[i], start, end;
+      if (s.type === 'start' || s.type === 'subtotal' || s.type === 'end') { start = 0; end = s.value; cum = s.value; }
+      else { start = cum; end = cum + s.value; cum = end; }
+      pts.push({ s: s, start: start, end: end });
+      lo = Math.min(lo, start, end); hi = Math.max(hi, start, end);
+    }
+    hi = niceMax(hi); if (lo < 0) lo = -niceMax(-lo);
+    var sy = scaleY(lo, hi, T, H - B);
+    var out = svgOpen(W, H);
+    out += axis(null, lo, hi, T, H - B, L, W - R, function (v) { return usdC(v); });
+    for (i = 0; i < n; i++) {
+      var p = pts[i], x = L + gap * i + (gap - bw) / 2;
+      var fill = p.s.type === 'delta' ? (p.s.value < 0 ? '#AE1C2E' : '#1C6A4C')
+        : (p.s.type === 'end' ? '#13212B' : p.s.type === 'subtotal' ? '#27497F' : '#56697A');
+      var y1 = sy(p.start), y2 = sy(p.end);
+      out += rect(x, Math.min(y1, y2), bw, Math.abs(y2 - y1), fill);
+      if (i < n - 1 && p.s.type !== 'end') out += line(x + bw, sy(p.end), L + gap * (i + 1) + (gap - bw) / 2, sy(p.end), '#9FB0BC', 0.8, '3 2');
+      var vy = Math.min(y1, y2) - 5;
+      out += t(x + bw / 2, vy, usdC(p.s.value), p.s.value < 0 && p.s.type === 'delta' ? '#AE1C2E' : '#13212B', 'middle', 9.5);
+      var lab = p.s.label.split(' ');
+      var ly = H - B + 14;
+      if (lab.length > 1 && gap < 78) {
+        out += tt(x + bw / 2, ly, lab.slice(0, Math.ceil(lab.length / 2)).join(' '), '#56697A', 'middle', 9.5);
+        out += tt(x + bw / 2, ly + 11, lab.slice(Math.ceil(lab.length / 2)).join(' '), '#56697A', 'middle', 9.5);
+      } else out += tt(x + bw / 2, ly, p.s.label, '#56697A', 'middle', 9.5);
+      if (opt.share) out += t(x + bw / 2, H - B + 36, pct(p.s.value / opt.share, 1), '#8496A4', 'middle', 9);
+    }
+    return out + '</svg>';
+  }
+
+  /* -- waterfall (horizontal, for narrow screens) -- */
+  function waterfallH(steps, opt) {
+    opt = opt || {};
+    var W = 380, rowH = 26, T = 8, L = 118, R = 8;
+    var H = T + steps.length * rowH + 8;
+    var cum = 0, lo = 0, hi = 0, i, pts = [];
+    for (i = 0; i < steps.length; i++) {
+      var s = steps[i], start, end;
+      if (s.type === 'delta') { start = cum; end = cum + s.value; } else { start = 0; end = s.value; }
+      cum = end; pts.push({ s: s, start: start, end: end });
+      lo = Math.min(lo, start, end); hi = Math.max(hi, start, end);
+    }
+    hi = niceMax(hi); if (lo < 0) lo = -niceMax(-lo);
+    var sx = scaleX(lo, hi, L, W - R);
+    var out = svgOpen(W, H);
+    out += line(sx(0), T, sx(0), H - 6, '#9FB0BC', 1);
+    for (i = 0; i < pts.length; i++) {
+      var p = pts[i], y = T + i * rowH + 4;
+      var fill = p.s.type === 'delta' ? (p.s.value < 0 ? '#AE1C2E' : '#1C6A4C')
+        : (p.s.type === 'end' ? '#13212B' : p.s.type === 'subtotal' ? '#27497F' : '#56697A');
+      var x1 = sx(p.start), x2 = sx(p.end);
+      out += rect(Math.min(x1, x2), y, Math.abs(x2 - x1), rowH - 11, fill);
+      out += tt(L - 6, y + 9.5, p.s.label, '#13212B', 'end', 9.5, p.s.type === 'delta' ? 400 : 600);
+      // labels sit outside the bar where there is room, inside it where there is not
+      var txt = usdC(p.s.value), wNeed = txt.length * 5.3;
+      var right = Math.max(x1, x2), left = Math.min(x1, x2);
+      if (right + wNeed + 6 <= W) out += t(right + 4, y + 9.5, txt, '#13212B', 'start', 9);
+      else if (right - left > wNeed + 10) out += t(right - 5, y + 9.5, txt, '#FFFFFF', 'end', 9);
+      else out += t(left - 4, y + 9.5, txt, '#13212B', 'end', 9);
+    }
+    return out + '</svg>';
+  }
+
+  /* -- grouped / stacked columns with optional overlaid line -- */
+  function columns(cfg) {
+    var W = cfg.w || 1000, H = cfg.h || 300, L = 62, R = cfg.rightAxis ? 62 : 14, T = 16, B = 34;
+    var labs = cfg.labels, n = labs.length, series = cfg.series;
+    var stacked = !!cfg.stacked, i, j, lo = 0, hi = 0;
+    for (i = 0; i < n; i++) {
+      var pos = 0, negv = 0;
+      for (j = 0; j < series.length; j++) {
+        var v = series[j].values[i] || 0;
+        if (stacked) { if (v >= 0) pos += v; else negv += v; }
+        else { hi = Math.max(hi, v); lo = Math.min(lo, v); }
+      }
+      if (stacked) { hi = Math.max(hi, pos); lo = Math.min(lo, negv); }
+    }
+    if (cfg.line) for (i = 0; i < n; i++) { hi = Math.max(hi, cfg.line.values[i]); lo = Math.min(lo, cfg.line.values[i]); }
+    hi = niceMax(hi); if (lo < 0) lo = -niceMax(-lo);
+    var sy = scaleY(lo, hi, T, H - B);
+    var gap = (W - L - R) / n, bw = gap * 0.68, sw = stacked ? bw : bw / series.length;
+    var out = svgOpen(W, H);
+    out += axis(null, lo, hi, T, H - B, L, W - R, cfg.fmt || usdC);
+    for (i = 0; i < n; i++) {
+      var x0 = L + gap * i + (gap - bw) / 2, up = 0, dn = 0;
+      for (j = 0; j < series.length; j++) {
+        var val = series[j].values[i] || 0;
+        if (stacked) {
+          var base = val >= 0 ? up : dn, y1 = sy(base), y2 = sy(base + val);
+          out += rect(x0, Math.min(y1, y2), bw, Math.abs(y2 - y1), series[j].color);
+          if (val >= 0) up += val; else dn += val;
+        } else {
+          out += rect(x0 + sw * j, Math.min(sy(0), sy(val)), sw - 1.5, Math.abs(sy(val) - sy(0)), series[j].color);
+        }
+      }
+      out += tt(L + gap * i + gap / 2, H - B + 14, labs[i], '#56697A', 'middle', 9.5);
+    }
+    if (cfg.line) {
+      var d = '', ly, lsy = sy;
+      if (cfg.rightAxis) {
+        var l2 = 0, h2 = 0;
+        for (i = 0; i < n; i++) { h2 = Math.max(h2, cfg.line.values[i]); l2 = Math.min(l2, cfg.line.values[i]); }
+        h2 = niceMax(h2); if (l2 < 0) l2 = -niceMax(-l2);
+        lsy = scaleY(l2, h2, T, H - B);
+        for (i = 0; i <= 4; i++) {
+          var vv = l2 + (h2 - l2) * i / 4;
+          out += t(W - R + 6, lsy(vv) + 3.2, (cfg.rightFmt || usdC)(vv), '#8496A4', 'start', 9.5);
+        }
+      }
+      for (i = 0; i < n; i++) { ly = lsy(cfg.line.values[i]); d += (i ? 'L' : 'M') + (L + gap * i + gap / 2).toFixed(1) + ' ' + ly.toFixed(1); }
+      out += path(d, cfg.line.color, 1.8);
+      for (i = 0; i < n; i++) out += '<circle cx="' + (L + gap * i + gap / 2).toFixed(1) + '" cy="' +
+        lsy(cfg.line.values[i]).toFixed(1) + '" r="2.4" fill="' + cfg.line.color + '"/>';
+    }
+    return out + '</svg>';
+  }
+
+  /* -- multi-series line chart -- */
+  function lines(cfg) {
+    var W = cfg.w || 1000, H = cfg.h || 260, L = 62, R = 14, T = 16, B = 30;
+    var labs = cfg.labels, n = labs.length, i, j, lo = cfg.zero === false ? Infinity : 0, hi = 0;
+    for (j = 0; j < cfg.series.length; j++) for (i = 0; i < n; i++) {
+      hi = Math.max(hi, cfg.series[j].values[i]); lo = Math.min(lo, cfg.series[j].values[i]);
+    }
+    if (lo === Infinity) lo = 0;
+    hi = niceMax(hi); if (lo < 0) lo = -niceMax(-lo); else if (cfg.zero === false) lo = lo * 0.92;
+    var sy = scaleY(lo, hi, T, H - B), gap = n > 1 ? (W - L - R) / (n - 1) : 0;
+    var out = svgOpen(W, H);
+    out += axis(null, lo, hi, T, H - B, L, W - R, cfg.fmt || usdC, cfg.steps);
+    for (j = 0; j < cfg.series.length; j++) {
+      var s = cfg.series[j], d = '';
+      for (i = 0; i < n; i++) d += (i ? 'L' : 'M') + (L + gap * i).toFixed(1) + ' ' + sy(s.values[i]).toFixed(1);
+      out += path(d, s.color, s.width || 1.8, s.dash);
+      if (n <= 13) for (i = 0; i < n; i++) out += '<circle cx="' + (L + gap * i).toFixed(1) + '" cy="' +
+        sy(s.values[i]).toFixed(1) + '" r="2.2" fill="' + s.color + '"/>';
+    }
+    for (i = 0; i < n; i++) if (n <= 13 || i % 2 === 0) out += tt(L + gap * i, H - B + 14, labs[i], '#56697A', 'middle', 9.5);
+    return out + '</svg>';
+  }
+
+  /* -- scatter -- */
+  function scatter(cfg) {
+    var W = cfg.w || 1000, H = cfg.h || 320, L = 66, R = 16, T = 16, B = 40;
+    var pts = cfg.points, i, xlo = Infinity, xhi = -Infinity, ylo = Infinity, yhi = -Infinity;
+    for (i = 0; i < pts.length; i++) {
+      xlo = Math.min(xlo, pts[i].x); xhi = Math.max(xhi, pts[i].x);
+      ylo = Math.min(ylo, pts[i].y); yhi = Math.max(yhi, pts[i].y);
+    }
+    var xpad = (xhi - xlo) * 0.1 || 1, ypad = (yhi - ylo) * 0.12 || 0.01;
+    xlo = Math.max(0, xlo - xpad); xhi += xpad; ylo -= ypad; yhi += ypad;
+    var sx = scaleX(xlo, xhi, L, W - R), sy = scaleY(ylo, yhi, T, H - B);
+    var out = svgOpen(W, H);
+    for (i = 0; i <= 4; i++) {
+      var yv = ylo + (yhi - ylo) * i / 4, yy = sy(yv);
+      out += line(L, yy, W - R, yy, '#CBD5DC', 0.7) + t(L - 6, yy + 3.2, (cfg.yfmt || pct)(yv), '#8496A4', 'end', 9.5);
+      var xv = xlo + (xhi - xlo) * i / 4, xx = sx(xv);
+      out += line(xx, T, xx, H - B, '#CBD5DC', 0.5) +
+        t(xx, H - B + 14, (cfg.xfmt || usdC)(xv), '#8496A4', i === 0 ? 'start' : i === 4 ? 'end' : 'middle', 9.5);
+    }
+    var rmax = 0; for (i = 0; i < pts.length; i++) rmax = Math.max(rmax, pts[i].r || 1);
+    for (i = 0; i < pts.length; i++) {
+      var p = pts[i], r = 4 + 9 * Math.sqrt((p.r || 1) / (rmax || 1));
+      out += '<circle cx="' + sx(p.x).toFixed(1) + '" cy="' + sy(p.y).toFixed(1) + '" r="' + r.toFixed(1) +
+        '" fill="' + p.color + '" fill-opacity="0.72" stroke="' + p.color + '" stroke-width="1"/>';
+      if (p.label) out += t(sx(p.x), sy(p.y) - r - 4, p.label, '#56697A', 'middle', 9);
+    }
+    if (cfg.xlabel) out += tt((L + W - R) / 2, H - 6, cfg.xlabel, '#56697A', 'middle', 10);
+    return out + '</svg>';
+  }
+
+  /* -- horizontal bars -- */
+  function barsH(cfg) {
+    var items = cfg.items, W = cfg.w || 500, rowH = 26, L = cfg.labelW || 96, R = 58;
+    var H = items.length * rowH + 12, i, hi = 0, lo = 0;
+    for (i = 0; i < items.length; i++) { hi = Math.max(hi, items[i].value); lo = Math.min(lo, items[i].value); }
+    hi = niceMax(hi); if (lo < 0) lo = -niceMax(-lo);
+    var sx = scaleX(lo, hi, L, W - R), out = svgOpen(W, H);
+    out += line(sx(0), 4, sx(0), H - 6, '#9FB0BC', 1);
+    for (i = 0; i < items.length; i++) {
+      var it = items[i], y = 6 + i * rowH, x1 = sx(0), x2 = sx(it.value);
+      out += rect(Math.min(x1, x2), y, Math.abs(x2 - x1), rowH - 12, it.color || '#27497F');
+      out += tt(L - 7, y + 10.5, it.label, '#13212B', 'end', 10);
+      out += t(Math.max(x1, x2) + 5, y + 10.5, (cfg.fmt || usdC)(it.value), '#13212B', 'start', 9.5);
+    }
+    return out + '</svg>';
+  }
+
+  return {
+    state: state, F: F,
+    money: money, usd: usd, usdC: usdC, compact: compact, pct: pct, pp: pp, days: days,
+    num: num, sign: sign, fav: fav, esc: esc,
+    rangeLabel: rangeLabel, labels: labels, D: D, agg: agg, aggCh: aggCh,
+    slice: slice, sliceCh: sliceCh, chColor: chColor,
+    waterfall: waterfall, waterfallH: waterfallH, columns: columns, lines: lines,
+    scatter: scatter, barsH: barsH, niceMax: niceMax, svgOpen: svgOpen,
+    rect: rect, line: line, path: path, txt: t, ttxt: tt, axis: axis, scaleY: scaleY, scaleX: scaleX
+  };
+}());
+
+</script>
+<script>
+/* ======================= tab renderers ======================= */
+(function () {
+  'use strict';
+  var A = APP, F = FPA;
+  var usd = A.usd, usdC = A.usdC, pct = A.pct, num = A.num, days = A.days, esc = A.esc;
+
+  function kpi(label, value, detail, formula, cls) {
+    return '<div class="kpi"><div class="kpi-l">' + esc(label) + '</div>' +
+      '<div class="kpi-v mono ' + (cls || '') + '">' + value + '</div>' +
+      (detail ? '<div class="kpi-d">' + detail + '</div>' : '') +
+      (formula ? '<div class="formula">' + esc(formula) + '</div>' : '') + '</div>';
+  }
+  function panel(title, note, body) {
+    return '<section class="panel"><h2>' + esc(title) + (note ? ' <em>' + esc(note) + '</em>' : '') +
+      '</h2>' + body + '</section>';
+  }
+  function chartPanel(title, note, svg, legend, foot) {
+    return panel(title, note, (legend ? '<div class="legend">' + legend + '</div>' : '') +
+      '<div class="body">' + svg + '</div>' + (foot ? '<div class="note">' + foot + '</div><div style="height:12px"></div>' : ''));
+  }
+  function leg(items) {
+    return items.map(function (i) { return '<span><i style="background:' + i.c + '"></i>' + esc(i.l) + '</span>'; }).join('');
+  }
+  function chLeg() {
+    return leg(F.CHANNELS.map(function (c) { return { c: A.chColor(c.key), l: c.label }; }));
+  }
+  function wf(steps, opt) { return A.state.narrow ? A.waterfallH(steps, opt) : A.waterfall(steps, opt); }
+
+  /* ------------------------------ Overview ------------------------------ */
+  function overview() {
+    var a = A.agg(), s = A.slice(), L = A.labels(), h = '';
+    h += '<section class="panel"><h2>' + esc(A.rangeLabel()) + ' <em>' +
+      F.SCENARIOS.filter(function (x) { return x.key === A.state.scenario; })[0].label + '</em></h2><div class="kpis">' +
+      kpi('Net revenue', usd(a.netRevenue), 'gross ' + usdC(a.grossSales),
+          'net revenue = gross sales \u2212 returns \u2212 discounts') +
+      kpi('Contribution margin', pct(a.contributionMargin), usd(a.contribution),
+          'contribution = net revenue \u2212 marketplace fees \u2212 payment fees \u2212 shipping & fulfilment \u2212 COGS \u2212 ad spend') +
+      kpi('EBITDA', usd(a.ebitda), pct(a.ebitdaMargin) + ' of net revenue', 'EBITDA = contribution \u2212 opex') +
+      kpi('Free cash flow', usd(a.fcf), pct(a.fcfConversion) + ' of EBITDA',
+          'FCF = EBITDA \u2212 \u0394inventory \u2212 \u0394AR \u2212 \u0394unsettled + \u0394AP \u2212 capex. Before tax, interest and financing.',
+          a.fcf < 0 ? 'neg' : '') +
+      kpi('Closing cash', usd(a.cashClose), 'opened ' + usdC(a.cashOpen),
+          'closing cash = opening cash + free cash flow over the range') +
+      kpi('Cash conversion cycle', days(a.ccc) + 'd', 'DIO ' + days(a.dio) + ' \u00b7 DSO ' + days(a.dso) +
+          ' \u00b7 lag ' + days(a.settlementLag) + ' \u00b7 DPO ' + days(a.dpo),
+          'CCC = DIO + DSO + settlement lag \u2212 DPO, all on average balances over the range') +
+      '</div></section>';
+
+    h += chartPanel('Gross-to-net bridge', A.rangeLabel() + ' \u00b7 blended', wf(F.bridge(a), { share: a.grossSales }),
+      leg([{ c: '#56697A', l: 'Gross sales' }, { c: '#AE1C2E', l: 'Deduction' },
+           { c: '#27497F', l: 'Subtotal' }, { c: '#13212B', l: 'EBITDA' }]),
+      'Percentages under each bar are that step as a share of gross sales. Every figure derives from the channel-level primitives; nothing on this bridge is stored.');
+
+    var mix = F.CHANNELS.map(function (c) {
+      return { name: c.label, color: A.chColor(c.key),
+        values: A.sliceCh(c.key).map(function (r) { return r.netRevenue; }) };
+    });
+    h += chartPanel('Net revenue by channel, EBITDA overlaid', 'monthly', A.columns({
+      labels: L, series: mix, stacked: true,
+      line: { values: s.map(function (r) { return r.ebitda; }), color: '#13212B' },
+      rightAxis: true, h: 320
+    }), chLeg() + leg([{ c: '#13212B', l: 'EBITDA (right axis)' }]));
+
+    var rows = F.SCENARIOS.map(function (sc) {
+      var g = F.aggregate(A.D(sc.key), A.state.m0, A.state.m1);
+      return '<tr' + (sc.key === A.state.scenario ? ' class="sub"' : '') + '><td class="name">' + sc.label + '</td>' +
+        ['grossSales', 'netRevenue', 'contribution', 'opex', 'ebitda', 'fcf'].map(function (k) {
+          return '<td class="n">' + usd(g[k]) + '</td>'; }).join('') +
+        '<td class="n">' + pct(g.contributionMargin) + '</td><td class="n">' + pct(g.ebitdaMargin) + '</td></tr>';
+    }).join('');
+    h += panel('Scenario summary', A.rangeLabel(), '<div class="scroll"><table><thead><tr><th>Scenario</th>' +
+      ['Gross sales', 'Net revenue', 'Contribution', 'Opex', 'EBITDA', 'Free cash flow'].map(function (x) {
+        return '<th class="n">' + x + '</th>'; }).join('') +
+      '<th class="n">CM %</th><th class="n">EBITDA %</th></tr></thead><tbody>' + rows + '</tbody></table></div>');
+    return h;
+  }
+
+  /* ------------------------------ Channel ------------------------------- */
+  function channelTab() {
+    var a = A.agg(), h = '', chs = F.CHANNELS.map(function (c) { return A.aggCh(c.key); });
+    var lines = [
+      ['grossSales', 'Gross sales', 0], ['returns', 'Returns', 1], ['discounts', 'Discounts', 1],
+      ['netRevenue', 'Net revenue', 2], ['marketplaceFees', 'Marketplace fees', 1],
+      ['paymentFees', 'Payment fees', 1], ['shipping', 'Shipping & fulfilment', 1],
+      ['cogs', 'COGS', 1], ['adSpend', 'Ad spend', 1], ['contribution', 'Contribution margin', 2]
+    ];
+    var body = lines.map(function (L) {
+      var cls = L[2] === 2 ? ' class="sub"' : '';
+      var neg = L[2] === 1;
+      return '<tr' + cls + '><td class="name' + (neg ? ' ind' : '') + '">' + L[1] + '</td>' +
+        chs.map(function (c) { return '<td class="n' + (neg ? ' neg' : '') + '">' +
+          (neg ? '(' + usd(c[L[0]]).replace(/[()]/g, '') + ')' : usd(c[L[0]])) + '</td>'; }).join('') +
+        '<td class="n' + (neg ? ' neg' : '') + '">' + (neg ? '(' + usd(a[L[0]]) + ')' : usd(a[L[0]])) + '</td>' +
+        '<td class="n muted">' + pct(a[L[0]] / a.netRevenue) + '</td></tr>';
+    }).join('');
+    body += '<tr class="tot"><td class="name">Contribution %</td>' +
+      chs.map(function (c) { return '<td class="n">' + pct(c.contributionMargin) + '</td>'; }).join('') +
+      '<td class="n">' + pct(a.contributionMargin) + '</td><td class="n"></td></tr>';
+    h += panel('Channel P&L to contribution', A.rangeLabel(),
+      '<div class="scroll"><table><thead><tr><th>Line item</th>' +
+      F.CHANNELS.map(function (c) { return '<th class="n">' + c.label + '</th>'; }).join('') +
+      '<th class="n">Blended</th><th class="n">% net rev</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
+      '<div class="note">Opex is a company-level primitive and is not allocated to channels, so contribution is the lowest line that can be stated per channel without an arbitrary driver.</div><div style="height:12px"></div>');
+
+    h += '<div class="grid g2">';
+    h += chartPanel('Contribution margin by channel', A.rangeLabel(), A.barsH({
+      items: F.CHANNELS.map(function (c, i) {
+        return { label: c.label, value: chs[i].contributionMargin, color: A.chColor(c.key) }; }),
+      fmt: function (v) { return pct(v); }, w: 470, labelW: 96
+    }), '', 'eBay carries the highest contribution rate on the smallest revenue base; Amazon is second by revenue and last by margin once referral fees, FBA and an ' +
+      pct(chs[1].returnRate) + ' return rate are absorbed.');
+    h += chartPanel('Net revenue mix', 'share of monthly net revenue', A.columns({
+      labels: A.labels(), stacked: true, w: 470, h: 280,
+      series: F.CHANNELS.map(function (c) {
+        return { name: c.label, color: A.chColor(c.key),
+          values: A.sliceCh(c.key).map(function (r) { return r.netRevenue; }) }; })
+    }), chLeg());
+    h += '</div>';
+
+    var pts = [];
+    F.CHANNELS.forEach(function (c) {
+      A.sliceCh(c.key).forEach(function (r) {
+        pts.push({ x: r.netRevenue, y: F.div(r.contribution, r.netRevenue), r: r.orders,
+                   color: A.chColor(c.key) });
+      });
+    });
+    h += chartPanel('Monthly net revenue against contribution rate', 'one point per channel-month, sized by orders',
+      A.scatter({ points: pts, xlabel: 'Net revenue in the month', yfmt: function (v) { return pct(v, 0); } }),
+      chLeg(), 'The channel bands barely overlap. Contribution rate here is a structural property of the channel, not a function of how much volume ran through it in the month.');
+    return h;
+  }
+
+  /* --------------------------- Gross-to-net ----------------------------- */
+  function gtn() {
+    var a = A.agg(), h = '';
+    h += chartPanel('Gross-to-net bridge \u2014 blended', A.rangeLabel(), wf(F.bridge(a), { share: a.grossSales }),
+      leg([{ c: '#56697A', l: 'Gross sales' }, { c: '#AE1C2E', l: 'Deduction' },
+           { c: '#27497F', l: 'Subtotal' }, { c: '#13212B', l: 'EBITDA' }]));
+
+    h += '<div class="grid g2">';
+    F.CHANNELS.forEach(function (c) {
+      var g = A.aggCh(c.key);
+      g.opex = 0; g.ebitda = g.contribution;
+      var steps = F.bridge(g).slice(0, 10);
+      h += chartPanel(c.label, A.rangeLabel() + ' \u00b7 to contribution',
+        A.state.narrow ? A.waterfallH(steps) : A.waterfall(steps, { w: 520, h: 330, share: g.grossSales }));
+    });
+    h += '</div>';
+    var blend = F.bridge(a);
+    h += panel('Bridge steps as a share of gross sales', A.rangeLabel(),
+      '<div class="scroll"><table><thead><tr><th>Step</th><th class="n">Blended</th><th class="n">%</th>' +
+      F.CHANNELS.map(function (c) { return '<th class="n">' + c.label + ' %</th>'; }).join('') +
+      '</tr></thead><tbody>' + blend.map(function (st, i) {
+        var key = ['grossSales', 'returns', 'discounts', 'netRevenue', 'marketplaceFees', 'paymentFees',
+                   'shipping', 'cogs', 'adSpend', 'contribution', 'opex', 'ebitda'][i];
+        var chCells = F.CHANNELS.map(function (c) {
+          var g = A.aggCh(c.key);
+          if (key === 'opex' || key === 'ebitda') return '<td class="n muted">\u2014</td>';
+          return '<td class="n">' + pct(g[key] / g.grossSales) + '</td>';
+        }).join('');
+        return '<tr' + (st.type !== 'delta' ? ' class="sub"' : '') + '><td class="name' +
+          (st.type === 'delta' ? ' ind' : '') + '">' + st.label + '</td><td class="n">' + usd(st.value) +
+          '</td><td class="n">' + pct(st.value / a.grossSales) + '</td>' + chCells + '</tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="note">Opex and EBITDA are shown blended only. Allocating a company-level cost across channels would invent a driver the data does not contain.</div><div style="height:12px"></div>');
+    h += '</div>';
+    return h;
+  }
+
+  /* -------------------------- Unit economics ---------------------------- */
+  function unit() {
+    var a = A.agg(), h = '', L = A.labels();
+    h += '<section class="panel"><h2>Unit economics <em>' + esc(A.rangeLabel()) + '</em></h2><div class="kpis">' +
+      kpi('Average order value', usd(a.aov, 2), num(a.orders) + ' orders', 'AOV = gross sales \u00f7 orders') +
+      kpi('Average selling price', usd(a.asp, 2), num(a.units) + ' units', 'ASP = gross sales \u00f7 units') +
+      kpi('Units per order', a.unitsPerOrder.toFixed(2), '', 'units \u00f7 orders') +
+      kpi('Customer acquisition cost', usd(a.cac, 2), num(a.newCustomers) + ' new customers',
+          'CAC = ad spend \u00f7 new customers. Paid media only; no salary or tooling loaded in.') +
+      kpi('Contribution per order', usd(a.contributionPerOrder, 2),
+          pct(F.div(a.contributionPerOrder, a.aov)) + ' of AOV', 'contribution \u00f7 orders') +
+      kpi('Return rate', pct(a.returnRate), usd(a.returns) + ' returned', 'returns \u00f7 gross sales') +
+      '</div></section>';
+
+    var chs = F.CHANNELS.map(function (c) { return A.aggCh(c.key); });
+    var metrics = [['aov', 'Average order value', 'usd2'], ['asp', 'Average selling price', 'usd2'],
+      ['unitsPerOrder', 'Units per order', 'x2'], ['orders', 'Orders', 'num'], ['units', 'Units', 'num'],
+      ['newCustomers', 'New customers', 'num'], ['cac', 'CAC', 'usd2'],
+      ['contributionPerOrder', 'Contribution per order', 'usd2'], ['returnRate', 'Return rate', 'pct'],
+      ['discountRate', 'Discount rate', 'pct'], ['contributionMargin', 'Contribution margin', 'pct']];
+    function f(v, kind) {
+      return kind === 'usd2' ? usd(v, 2) : kind === 'pct' ? pct(v) : kind === 'x2' ? v.toFixed(2) : num(v);
+    }
+    h += panel('By channel', A.rangeLabel(), '<div class="scroll"><table><thead><tr><th>Metric</th>' +
+      F.CHANNELS.map(function (c) { return '<th class="n">' + c.label + '</th>'; }).join('') +
+      '<th class="n">Blended</th></tr></thead><tbody>' + metrics.map(function (M) {
+        return '<tr><td class="name">' + M[1] + '</td>' + chs.map(function (c) {
+          return '<td class="n">' + f(c[M[0]], M[2]) + '</td>'; }).join('') +
+          '<td class="n sub">' + f(a[M[0]], M[2]) + '</td></tr>';
+      }).join('') + '</tbody></table></div>');
+
+    function mini(title, pick, fmt, note) {
+      return chartPanel(title, 'monthly', A.lines({
+        labels: L, w: 470, h: 230, zero: false, fmt: fmt,
+        series: F.CHANNELS.map(function (c) {
+          return { color: A.chColor(c.key), values: A.sliceCh(c.key).map(pick) }; })
+      }), chLeg(), note);
+    }
+    h += '<div class="grid g2">';
+    h += mini('Average order value', function (r) { return F.div(r.grossSales, r.orders); },
+      function (v) { return usd(v, 0); });
+    h += mini('Customer acquisition cost', function (r) { return F.div(r.adSpend, r.newCustomers); },
+      function (v) { return usd(v, 0); }, 'DTC acquisition is the expensive one. The marketplaces buy customers cheaply because the platform supplies the traffic and then charges for it further down the bridge.');
+    h += mini('Contribution per order', function (r) { return F.div(r.contribution, r.orders); },
+      function (v) { return usd(v, 0); });
+    h += mini('Return rate', function (r) { return F.div(r.returns, r.grossSales); },
+      function (v) { return pct(v, 0); }, 'January carries post-holiday returns against a thin sales month, which is why the rate spikes there across all three channels.');
+    h += '</div>';
+    return h;
+  }
+
+  /* ----------------------------- Inventory ------------------------------ */
+  function inventory() {
+    var a = A.agg(), s = A.slice(), L = A.labels(), h = '';
+    h += '<section class="panel"><h2>Inventory <em>' + esc(A.rangeLabel()) + '</em></h2><div class="kpis">' +
+      kpi('Days inventory outstanding', days(a.dio) + 'd', 'average balance ' + usdC(a.avgInventory),
+          'DIO = average inventory \u00f7 COGS \u00d7 days in range. Average of the opening balance and every month-end close, not the closing balance.') +
+      kpi('Weeks of cover', a.weeksOfCover.toFixed(1), '', 'average inventory \u00f7 (COGS \u00f7 days) \u00f7 7') +
+      kpi('Opening inventory', usd(a.invOpen), F.MONTHS[A.state.m0] + ' 1', 'stored primitive for January; rolled forward thereafter') +
+      kpi('Purchases', usd(a.purchases), 'company level', 'stored primitive') +
+      kpi('COGS', usd(a.cogs), 'sum of channel COGS', 'inventory is pooled at company level; COGS is stored per channel') +
+      kpi('Closing inventory', usd(a.invClose), F.MONTHS[A.state.m1] + ' close',
+          'closing = opening + purchases \u2212 COGS. Never stored.') +
+      '</div></section>';
+
+    h += chartPanel('Purchases against COGS, inventory overlaid', 'monthly', A.columns({
+      labels: L, h: 320, rightAxis: true,
+      series: [{ color: '#27497F', values: s.map(function (r) { return r.purchases; }) },
+               { color: '#8496A4', values: s.map(function (r) { return r.cogs; }) }],
+      line: { values: s.map(function (r) { return r.invClose; }), color: '#9C6A16' }
+    }), leg([{ c: '#27497F', l: 'Purchases' }, { c: '#8496A4', l: 'COGS' },
+             { c: '#9C6A16', l: 'Closing inventory (right axis)' }]),
+      'Purchases run ahead of COGS from May, peak in September and collapse in December. The build is the reason healthy EBITDA does not turn into cash.');
+
+    var body = s.map(function (r) {
+      return '<tr><td class="name">' + r.name + '</td><td class="n">' + usd(r.invOpen) + '</td>' +
+        '<td class="n">' + usd(r.purchases) + '</td><td class="n neg">(' + usd(r.cogs) + ')</td>' +
+        '<td class="n">' + usd(r.invClose) + '</td><td class="n ' + A.sign(r.dInventory) + '">' +
+        usd(r.dInventory) + '</td><td class="n muted">' +
+        days(F.div(r.invClose, r.cogs) * r.days) + '</td></tr>';
+    }).join('');
+    h += panel('Roll-forward', A.rangeLabel(), '<div class="scroll"><table><thead><tr><th>Month</th>' +
+      '<th class="n">Opening</th><th class="n">Purchases</th><th class="n">COGS</th><th class="n">Closing</th>' +
+      '<th class="n">Movement</th><th class="n">Closing DIO</th></tr></thead><tbody>' + body +
+      '<tr class="tot"><td class="name">' + esc(A.rangeLabel()) + '</td><td class="n">' + usd(a.invOpen) +
+      '</td><td class="n">' + usd(a.purchases) + '</td><td class="n neg">(' + usd(a.cogs) + ')</td><td class="n">' +
+      usd(a.invClose) + '</td><td class="n ' + A.sign(a.invClose - a.invOpen) + '">' + usd(a.invClose - a.invOpen) +
+      '</td><td class="n">' + days(a.dio) + '</td></tr></tbody></table></div>' +
+      '<div class="note">The closing column is computed, not stored, which is why the identity at the foot of the screen cannot drift. The final column uses the closing balance for that single month; the KPI above uses average balances across the range.</div><div style="height:12px"></div>');
+    return h;
+  }
+
+  /* -------------------------- Working capital --------------------------- */
+  function workingCapital() {
+    var a = A.agg(), s = A.slice(), L = A.labels(), h = '';
+    h += '<section class="panel"><h2>Working capital <em>' + esc(A.rangeLabel()) + '</em></h2><div class="kpis">' +
+      kpi('DIO', days(a.dio) + 'd', 'avg inv ' + usdC(a.avgInventory), 'average inventory \u00f7 COGS \u00d7 days') +
+      kpi('DSO', days(a.dso) + 'd', 'avg AR ' + usdC(a.avgAR),
+          'average AR \u00f7 non-marketplace net revenue \u00d7 days. AR is DTC only; marketplace money in flight sits in the unsettled balance instead, so nothing is counted twice.') +
+      kpi('Settlement lag', days(a.settlementLag) + 'd', 'avg unsettled ' + usdC(a.avgUnsettled),
+          'average unsettled marketplace balance \u00f7 marketplace remittance \u00d7 days') +
+      kpi('DPO', days(a.dpo) + 'd', 'avg AP ' + usdC(a.avgAP),
+          'average AP \u00f7 purchases \u00d7 days. AP is trade payables against inventory purchases, not opex accruals.') +
+      kpi('Cash conversion cycle', days(a.ccc) + 'd', '', 'CCC = DIO + DSO + settlement lag \u2212 DPO') +
+      '</div></section>';
+
+    h += '<div class="grid g2">';
+    h += chartPanel('Cash conversion cycle', A.rangeLabel(), A.barsH({
+      items: [{ label: 'DIO', value: a.dio, color: '#9C6A16' },
+              { label: 'DSO', value: a.dso, color: '#27497F' },
+              { label: 'Settlement lag', value: a.settlementLag, color: '#5B7FA8' },
+              { label: 'DPO', value: -a.dpo, color: '#1C6A4C' },
+              { label: 'CCC', value: a.ccc, color: '#13212B' }],
+      fmt: function (v) { return days(v) + 'd'; }, w: 470, labelW: 106
+    }), '', 'DSO is measured on DTC net revenue and the settlement lag on marketplace remittance, because each ties to the asset it funds. The four therefore describe different denominators and the cycle is a duration, not an arithmetic sum of one revenue base.');
+    h += chartPanel('Balances', 'month-end', A.lines({
+      labels: L, w: 470, h: 280,
+      series: [{ color: '#9C6A16', values: s.map(function (r) { return r.invClose; }) },
+               { color: '#27497F', values: s.map(function (r) { return r.ar; }) },
+               { color: '#5B7FA8', values: s.map(function (r) { return r.unsettled; }) },
+               { color: '#1C6A4C', values: s.map(function (r) { return r.ap; }) }]
+    }), leg([{ c: '#9C6A16', l: 'Inventory' }, { c: '#27497F', l: 'AR' },
+             { c: '#5B7FA8', l: 'Unsettled marketplace' }, { c: '#1C6A4C', l: 'AP' }]));
+    h += '</div>';
+
+    var body = s.map(function (r) {
+      return '<tr><td class="name">' + r.name + '</td><td class="n">' + usd(r.invClose) + '</td><td class="n">' +
+        usd(r.ar) + '</td><td class="n">' + usd(r.unsettled) + '</td><td class="n">' + usd(r.ap) + '</td>' +
+        '<td class="n">' + usd(r.invClose + r.ar + r.unsettled - r.ap) + '</td>' +
+        '<td class="n muted">' + usd(r.marketplaceRemittance) + '</td></tr>';
+    }).join('');
+    h += panel('Balances and marketplace remittance', A.rangeLabel(),
+      '<div class="scroll"><table><thead><tr><th>Month</th><th class="n">Inventory</th><th class="n">AR</th>' +
+      '<th class="n">Unsettled</th><th class="n">AP</th><th class="n">Net working capital</th>' +
+      '<th class="n">Remittance received</th></tr></thead><tbody>' + body +
+      '<tr class="tot"><td class="name">Average</td><td class="n">' + usd(a.avgInventory) + '</td><td class="n">' +
+      usd(a.avgAR) + '</td><td class="n">' + usd(a.avgUnsettled) + '</td><td class="n">' + usd(a.avgAP) +
+      '</td><td class="n">' + usd(a.avgInventory + a.avgAR + a.avgUnsettled - a.avgAP) + '</td>' +
+      '<td class="n">' + usd(a.marketplaceRemittance) + '</td></tr></tbody></table></div>' +
+      '<div class="note">Remittance received = marketplace net revenue \u2212 the movement in the unsettled balance. It is the cash the platforms actually paid over in the period.</div><div style="height:12px"></div>');
+    return h;
+  }
+
+  /* ------------------------------- Cash --------------------------------- */
+  function cash() {
+    var a = A.agg(), s = A.slice(), L = A.labels(), h = '';
+    var dWC = a.dInventory + a.dAR + a.dUnsettled - a.dAP;
+    h += '<section class="panel"><h2>Cash flow <em>' + esc(A.rangeLabel()) + ' \u00b7 indirect</em></h2><div class="kpis">' +
+      kpi('EBITDA', usd(a.ebitda), pct(a.ebitdaMargin) + ' of net revenue', 'contribution \u2212 opex') +
+      kpi('Working capital movement', usd(-dWC), 'inventory ' + usdC(-a.dInventory),
+          '\u2212\u0394inventory \u2212 \u0394AR \u2212 \u0394unsettled + \u0394AP', dWC > 0 ? 'neg' : '') +
+      kpi('Capex', usd(a.capex), '', 'stored primitive') +
+      kpi('Free cash flow', usd(a.fcf), pct(a.fcfConversion) + ' of EBITDA',
+          'EBITDA \u2212 \u0394inventory \u2212 \u0394AR \u2212 \u0394unsettled + \u0394AP \u2212 capex. Before tax, interest and financing.',
+          a.fcf < 0 ? 'neg' : '') +
+      kpi('Opening cash', usd(a.cashOpen), F.MONTHS[A.state.m0] + ' 1', 'stored primitive for January; rolled forward thereafter') +
+      kpi('Closing cash', usd(a.cashClose), '', 'opening cash + free cash flow') +
+      '</div></section>';
+
+    var steps = [
+      { label: 'EBITDA', value: a.ebitda, type: 'start' },
+      { label: '\u0394 Inventory', value: -a.dInventory, type: 'delta' },
+      { label: '\u0394 Receivables', value: -a.dAR, type: 'delta' },
+      { label: '\u0394 Unsettled', value: -a.dUnsettled, type: 'delta' },
+      { label: '\u0394 Payables', value: a.dAP, type: 'delta' },
+      { label: 'Capex', value: -a.capex, type: 'delta' },
+      { label: 'Free cash flow', value: a.fcf, type: 'end' }
+    ];
+    h += chartPanel('EBITDA to free cash flow', A.rangeLabel(), wf(steps),
+      leg([{ c: '#1C6A4C', l: 'Cash released' }, { c: '#AE1C2E', l: 'Cash absorbed' }, { c: '#13212B', l: 'Free cash flow' }]),
+      'Inventory absorbs almost the whole of EBITDA. The business is profitable and cash-flat at the same time, which is the normal shape for a seasonal goods brand buying ahead of Q4 \u2014 and the reason a P&L-only dashboard would mislead here.');
+
+    h += chartPanel('Cash balance', 'month-end', A.columns({
+      labels: L, h: 300, rightAxis: true,
+      series: [{ color: '#8496A4', values: s.map(function (r) { return r.fcf; }) }],
+      line: { values: s.map(function (r) { return r.cashClose; }), color: '#13212B' }
+    }), leg([{ c: '#8496A4', l: 'Free cash flow in month' }, { c: '#13212B', l: 'Closing cash (right axis)' }]));
+
+    var body = s.map(function (r) {
+      return '<tr><td class="name">' + r.name + '</td><td class="n">' + usd(r.ebitda) + '</td>' +
+        '<td class="n ' + A.sign(-r.dInventory) + '">' + usd(-r.dInventory) + '</td>' +
+        '<td class="n ' + A.sign(-r.dAR) + '">' + usd(-r.dAR) + '</td>' +
+        '<td class="n ' + A.sign(-r.dUnsettled) + '">' + usd(-r.dUnsettled) + '</td>' +
+        '<td class="n ' + A.sign(r.dAP) + '">' + usd(r.dAP) + '</td>' +
+        '<td class="n neg">(' + usd(r.capex) + ')</td>' +
+        '<td class="n ' + A.sign(r.fcf) + '">' + usd(r.fcf) + '</td>' +
+        '<td class="n">' + usd(r.cashClose) + '</td></tr>';
+    }).join('');
+    h += panel('Indirect walk', A.rangeLabel(), '<div class="scroll"><table><thead><tr><th>Month</th>' +
+      ['EBITDA', '\u2212\u0394Inventory', '\u2212\u0394AR', '\u2212\u0394Unsettled', '+\u0394AP', 'Capex', 'Free cash flow', 'Closing cash']
+        .map(function (x) { return '<th class="n">' + x + '</th>'; }).join('') + '</tr></thead><tbody>' + body +
+      '<tr class="tot"><td class="name">' + esc(A.rangeLabel()) + '</td><td class="n">' + usd(a.ebitda) +
+      '</td><td class="n">' + usd(-a.dInventory) + '</td><td class="n">' + usd(-a.dAR) + '</td><td class="n">' +
+      usd(-a.dUnsettled) + '</td><td class="n">' + usd(a.dAP) + '</td><td class="n neg">(' + usd(a.capex) +
+      ')</td><td class="n">' + usd(a.fcf) + '</td><td class="n">' + usd(a.cashClose) + '</td></tr></tbody></table></div>');
+    return h;
+  }
+
+  /* ------------------------------ Variance ------------------------------ */
+  function variance() {
+    var cmpKey = A.state.compare;
+    var a = A.agg('actual'), p = A.agg(cmpKey);
+    var v = F.varianceTable(a, p), h = '';
+    var cmpLabel = cmpKey === 'plan' ? 'Plan' : 'Forecast';
+
+    h += '<section class="panel"><h2>Actual against ' + esc(cmpLabel) + ' <em>' + esc(A.rangeLabel()) +
+      '</em></h2><div class="kpis">' +
+      kpi('Gross sales variance', usd(a.grossSales - p.grossSales), pct(F.div(a.grossSales, p.grossSales) - 1),
+          'actual \u2212 ' + cmpLabel.toLowerCase(), A.fav(a.grossSales - p.grossSales)) +
+      kpi('Contribution variance', usd(v.contribution.total), pct(F.div(v.contribution.total, p.contribution)),
+          'signed sum of the line variances above contribution', A.fav(v.contribution.total)) +
+      kpi('EBITDA variance', usd(v.ebitda.total), A.pp(a.ebitdaMargin - p.ebitdaMargin) + ' of margin',
+          'contribution variance + opex spend variance', A.fav(v.ebitda.total)) +
+      kpi('Volume effect', usd(v.ebitda.volume), num(a.units - p.units) + ' units',
+          '(actual units \u2212 plan units) \u00d7 plan price \u00d7 plan rate', A.fav(v.ebitda.volume)) +
+      kpi('Price effect', usd(v.ebitda.price), usd(a.asp - p.asp, 2) + ' on ASP',
+          'actual units \u00d7 (actual price \u2212 plan price) \u00d7 plan rate', A.fav(v.ebitda.price)) +
+      kpi('Rate effect', usd(v.ebitda.rate), 'cost and deduction rates',
+          'actual units \u00d7 actual price \u00d7 (actual rate \u2212 plan rate)', A.fav(v.ebitda.rate)) +
+      '</div></section>';
+
+    var steps = [
+      { label: cmpLabel + ' EBITDA', value: p.ebitda, type: 'start' },
+      { label: 'Volume', value: v.ebitda.volume, type: 'delta' },
+      { label: 'Price', value: v.ebitda.price, type: 'delta' },
+      { label: 'Rate', value: v.ebitda.rate, type: 'delta' },
+      { label: 'Opex spend', value: v.ebitda.spend, type: 'delta' },
+      { label: 'Actual EBITDA', value: a.ebitda, type: 'end' }
+    ];
+    h += chartPanel('EBITDA bridge', A.rangeLabel(), wf(steps),
+      leg([{ c: '#1C6A4C', l: 'Favourable' }, { c: '#AE1C2E', l: 'Unfavourable' }]),
+      'Volume is favourable and price is unfavourable, and they very nearly cancel. The miss is almost entirely rate: returns, discounting, fulfilment and paid media all ran worse per dollar of gross sales than planned. Reading this as a demand problem would send the business after the wrong fix.');
+
+    function row(r, cls) {
+      return '<tr class="' + (cls || '') + '"><td class="name">' + esc(r.label) + '</td>' +
+        '<td class="n">' + usd(r.actual) + '</td><td class="n">' + usd(r.plan) + '</td>' +
+        '<td class="n ' + A.fav(r.volume) + '">' + usd(r.volume) + '</td>' +
+        '<td class="n ' + A.fav(r.price) + '">' + usd(r.price) + '</td>' +
+        '<td class="n ' + A.fav(r.rate) + '">' + usd(r.rate) + '</td>' +
+        '<td class="n ' + A.fav(r.spend || 0) + '">' + (r.spend === undefined ? '\u2014' : usd(r.spend)) + '</td>' +
+        '<td class="n ' + A.fav(r.total) + '">' + usd(r.total) + '</td>' +
+        '<td class="n muted">' + r.residual.toFixed(2) + '</td></tr>';
+    }
+    var body = v.rows.map(function (r) { return row(r); }).join('') +
+      row(v.contribution, 'sub') + row(v.opex) + row(v.ebitda, 'tot');
+    h += panel('Driver decomposition', 'favourable to EBITDA shown positive',
+      '<div class="scroll"><table><thead><tr><th>Line item</th><th class="n">Actual</th><th class="n">' +
+      esc(cmpLabel) + '</th><th class="n">Volume</th><th class="n">Price</th><th class="n">Rate</th>' +
+      '<th class="n">Spend</th><th class="n">Total</th><th class="n">Residual</th></tr></thead><tbody>' + body +
+      '</tbody></table></div><div class="note">The split is sequential and order-fixed: volume at ' + esc(cmpLabel.toLowerCase()) +
+      ' price and ' + esc(cmpLabel.toLowerCase()) + ' rate, then price at actual volume and ' + esc(cmpLabel.toLowerCase()) +
+      ' rate, then rate at actual volume and actual price. The three therefore sum to the total exactly; the residual column is the proof and reads zero on every row and every month range.</div><div style="height:12px"></div>');
+
+    var chBody = F.CHANNELS.map(function (c) {
+      var ca = A.aggCh(c.key, 'actual'), cp = A.aggCh(c.key, cmpKey);
+      var cv = F.varianceTable(ca, cp);
+      return '<tr><td class="name">' + c.label + '</td>' +
+        '<td class="n">' + usd(ca.netRevenue - cp.netRevenue) + '</td>' +
+        '<td class="n ' + A.fav(cv.contribution.volume) + '">' + usd(cv.contribution.volume) + '</td>' +
+        '<td class="n ' + A.fav(cv.contribution.price) + '">' + usd(cv.contribution.price) + '</td>' +
+        '<td class="n ' + A.fav(cv.contribution.rate) + '">' + usd(cv.contribution.rate) + '</td>' +
+        '<td class="n ' + A.fav(cv.contribution.total) + '">' + usd(cv.contribution.total) + '</td>' +
+        '<td class="n">' + A.pp(ca.contributionMargin - cp.contributionMargin) + '</td></tr>';
+    }).join('');
+    h += panel('Contribution variance by channel', A.rangeLabel(),
+      '<div class="scroll"><table><thead><tr><th>Channel</th><th class="n">Net revenue var</th>' +
+      '<th class="n">Volume</th><th class="n">Price</th><th class="n">Rate</th><th class="n">Contribution var</th>' +
+      '<th class="n">Margin</th></tr></thead><tbody>' + chBody + '</tbody></table></div>');
+    return h;
+  }
+
+  window.TABS = {
+    overview: overview, channel: channelTab, gtn: gtn, unit: unit,
+    inventory: inventory, wc: workingCapital, cash: cash, variance: variance
+  };
+  window.TABHELP = { kpi: kpi, panel: panel, chartPanel: chartPanel, leg: leg };
+}());
+
+</script>
+<script>
+/* ============ app shell: inputs, Excel, persistence, identities ============ */
+(function () {
+  'use strict';
+  var A = APP, F = FPA, S = A.state;
+  var usd = A.usd, pct = A.pct, esc = A.esc, num = A.num;
+  var KEY = 'fpa-dashboard-v1';
+  var PRISTINE = '<!doctype html>\n' + document.documentElement.outerHTML;
+
+  var TABLIST = [
+    ['overview', 'Overview'], ['channel', 'Channel'], ['gtn', 'Gross-to-Net'],
+    ['unit', 'Unit Economics'], ['inventory', 'Inventory'], ['wc', 'Working Capital'],
+    ['cash', 'Cash Flow'], ['variance', 'Variance'], ['inputs', 'Inputs']
+  ];
+
+  /* ------------------------------ data plumbing ------------------------- */
+  function recompute() {
+    S.derived = {};
+    F.SCENARIOS.forEach(function (s) { S.derived[s.key] = F.derive(S.data, s.key); });
+  }
+
+  function validate(d) {
+    try {
+      if (!d || !d.opening || !d.scenarios) return 'missing opening balances or scenarios';
+      var ks = ['actual', 'plan', 'forecast'], i, j, k;
+      for (i = 0; i < ks.length; i++) {
+        var sc = d.scenarios[ks[i]];
+        if (!sc || !sc.channel || !sc.company) return 'scenario "' + ks[i] + '" is incomplete';
+        for (j = 0; j < F.CHANNELS.length; j++) {
+          var ch = sc.channel[F.CHANNELS[j].key];
+          if (!ch) return 'scenario "' + ks[i] + '" has no ' + F.CHANNELS[j].key + ' channel';
+          for (k = 0; k < F.CHANNEL_LINES.length; k++) {
+            var arr = ch[F.CHANNEL_LINES[k].key];
+            if (!arr || arr.length !== 12) return F.CHANNELS[j].key + ' / ' + F.CHANNEL_LINES[k].key + ' is not 12 months';
+          }
+        }
+        for (k = 0; k < F.COMPANY_LINES.length; k++)
+          if (!sc.company[F.COMPANY_LINES[k].key] || sc.company[F.COMPANY_LINES[k].key].length !== 12)
+            return 'company / ' + F.COMPANY_LINES[k].key + ' is not 12 months';
+      }
+      return null;
+    } catch (e) { return e.message; }
+  }
+
+  function storageOK() {
+    try { localStorage.setItem(KEY + '-probe', '1'); localStorage.removeItem(KEY + '-probe'); return true; }
+    catch (e) { S.storageNote = e.name === 'SecurityError' ? 'blocked by the browser' : (e.name || 'unavailable'); return false; }
+  }
+  function save() {
+    if (!S.storage) return false;
+    try { localStorage.setItem(KEY, JSON.stringify(S.data)); return true; }
+    catch (e) { S.storage = false; S.storageNote = 'write failed (' + (e.name || 'error') + ')'; return false; }
+  }
+
+  /* -------------------------------- Excel -------------------------------- */
+  // Excel serial dates, converted arithmetically in UTC. SheetJS cellDates
+  // returns a Date one millisecond before local midnight, which silently
+  // shifts every date back a day anywhere east of Greenwich, so we never
+  // let it build Date objects for us.
+  var EPOCH = Date.UTC(1899, 11, 30);
+  function toSerial(y, mIdx) { return (Date.UTC(y, mIdx, 1) - EPOCH) / 86400000; }
+  function monthFromSerial(v) {
+    if (typeof v !== 'number' || !isFinite(v) || v < 61 || v > 80000) return -1;
+    var d = new Date(EPOCH + Math.round(v) * 86400000);
+    return d.getUTCFullYear() < 1900 ? -1 : d.getUTCMonth();
+  }
+
+  function buildSheet(scenarioKey) {
+    var sc = S.data.scenarios[scenarioKey], aoa = [], i, j, m;
+    var head = ['Channel', 'Line Item'];
+    for (m = 0; m < 12; m++) head.push(toSerial(S.data.meta.year || F.YEAR, m));
+    aoa.push(head);
+    for (i = 0; i < F.CHANNELS.length; i++) for (j = 0; j < F.CHANNEL_LINES.length; j++) {
+      var r = [F.CHANNELS[i].label, F.CHANNEL_LINES[j].label];
+      for (m = 0; m < 12; m++) r.push(sc.channel[F.CHANNELS[i].key][F.CHANNEL_LINES[j].key][m]);
+      aoa.push(r);
+    }
+    for (j = 0; j < F.COMPANY_LINES.length; j++) {
+      var rc = ['Company', F.COMPANY_LINES[j].label];
+      for (m = 0; m < 12; m++) rc.push(sc.company[F.COMPANY_LINES[j].key][m]);
+      aoa.push(rc);
+    }
+    for (j = 0; j < F.OPENING_LINES.length; j++) {
+      var ro = ['Company', F.OPENING_LINES[j].label, S.data.opening[F.OPENING_LINES[j].key]];
+      for (m = 1; m < 12; m++) ro.push(null);
+      aoa.push(ro);
+    }
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    for (m = 0; m < 12; m++) {
+      var ref = XLSX.utils.encode_cell({ r: 0, c: 2 + m });
+      ws[ref] = { t: 'n', v: toSerial(S.data.meta.year || F.YEAR, m), z: 'mmm-yy' };
+    }
+    ws['!cols'] = [{ wch: 14 }, { wch: 28 }].concat(Array.apply(null, Array(12)).map(function () { return { wch: 13 }; }));
+    return ws;
+  }
+
+  function downloadTemplate(scenarioKey) {
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, buildSheet(scenarioKey), 'Data');
+    XLSX.writeFile(wb, 'fpa-template-' + scenarioKey + '.xlsx');
+  }
+
+  function norm(s) { return String(s === null || s === undefined ? '' : s).replace(/\s+/g, ' ').trim().toLowerCase(); }
+  var CH_ALIAS = {}, LINE_ALIAS = {}, CO_ALIAS = {}, OPEN_ALIAS = {};
+  F.CHANNELS.forEach(function (c) { CH_ALIAS[norm(c.label)] = c.key; CH_ALIAS[norm(c.key)] = c.key; });
+  CH_ALIAS['shopify'] = 'shopify'; CH_ALIAS['dtc'] = 'shopify'; CH_ALIAS['shopify dtc'] = 'shopify';
+  F.CHANNEL_LINES.forEach(function (l) { LINE_ALIAS[norm(l.label)] = l.key; LINE_ALIAS[norm(l.key)] = l.key; });
+  LINE_ALIAS['shipping and fulfilment'] = 'shipping'; LINE_ALIAS['shipping & fulfillment'] = 'shipping';
+  LINE_ALIAS['shipping and fulfillment'] = 'shipping'; LINE_ALIAS['cost of goods sold'] = 'cogs';
+  LINE_ALIAS['unsettled'] = 'unsettled'; LINE_ALIAS['unsettled balance'] = 'unsettled';
+  F.COMPANY_LINES.forEach(function (l) { CO_ALIAS[norm(l.label)] = l.key; CO_ALIAS[norm(l.key)] = l.key; });
+  CO_ALIAS['ar'] = 'accountsReceivable'; CO_ALIAS['ap'] = 'accountsPayable';
+  CO_ALIAS['operating expenses'] = 'opex'; CO_ALIAS['inventory purchases'] = 'purchases';
+  F.OPENING_LINES.forEach(function (l) { OPEN_ALIAS[norm(l.label)] = l.key; });
+
+  function parseWorkbook(buf) {
+    var errs = [], wb, ws, aoa;
+    try {
+      wb = XLSX.read(new Uint8Array(buf), { type: 'array' });     // never cellDates
+      ws = wb.Sheets[wb.SheetNames[0]];
+      aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: false });
+    } catch (e) { return { errors: [{ row: '\u2014', what: 'File', why: 'could not be read as a workbook (' + (e.message || e) + ')' }] }; }
+    if (!aoa || aoa.length < 2) return { errors: [{ row: '\u2014', what: 'Sheet', why: 'is empty' }] };
+
+    var head = aoa[0], colMonth = {}, seen = {}, c;
+    for (c = 2; c < head.length && c < 14; c++) {
+      var mi = monthFromSerial(head[c]);
+      if (mi < 0) {
+        errs.push({ row: 1, what: 'Header ' + XLSX.utils.encode_col(c) + '1',
+          why: 'is not a readable Excel date' + (typeof head[c] === 'string' ? ' (text "' + head[c] + '" \u2014 the template writes real dates, not text)' : '') });
+        continue;
+      }
+      if (seen[mi]) { errs.push({ row: 1, what: 'Header ' + XLSX.utils.encode_col(c) + '1', why: 'repeats ' + F.MONTHS[mi] }); continue; }
+      seen[mi] = true; colMonth[c] = mi;
+    }
+    var have = Object.keys(colMonth).length;
+    if (have === 0) return { errors: errs.concat([{ row: 1, what: 'Header row', why: 'has no readable month dates in columns C to N' }]) };
+    for (var mm = 0; mm < 12; mm++) if (!seen[mm]) errs.push({ row: 1, what: F.MONTHS[mm], why: 'has no column; those months import as zero' });
+
+    var sc = { channel: {}, company: {} }, opening = {}, dupe = {}, i, j;
+    F.CHANNELS.forEach(function (ch) {
+      sc.channel[ch.key] = {};
+      F.CHANNEL_LINES.forEach(function (l) { sc.channel[ch.key][l.key] = new Array(12).fill(0); });
+    });
+    F.COMPANY_LINES.forEach(function (l) { sc.company[l.key] = new Array(12).fill(0); });
+    var filled = {};
+
+    for (i = 1; i < aoa.length; i++) {
+      var row = aoa[i], rn = i + 1;
+      if (!row || (row[0] === null && row[1] === null)) continue;
+      var who = norm(row[0]), what = norm(row[1]);
+      if (!who && !what) continue;
+      if (!what) { errs.push({ row: rn, what: String(row[0] || ''), why: 'has no line item in column B' }); continue; }
+
+      var isCompany = (who === 'company' || who === 'co' || who === '');
+      var chKey = CH_ALIAS[who];
+      if (!isCompany && !chKey) { errs.push({ row: rn, what: String(row[0]), why: 'is not a recognised channel' }); continue; }
+
+      var target = null, lineKey = null, kind = '';
+      if (chKey) {
+        lineKey = LINE_ALIAS[what];
+        if (!lineKey) { errs.push({ row: rn, what: String(row[1]), why: 'is not a recognised channel line item' }); continue; }
+        target = sc.channel[chKey][lineKey]; kind = chKey + '/' + lineKey;
+      } else if (OPEN_ALIAS[what]) {
+        var ok = OPEN_ALIAS[what], ov = row[2];
+        if (typeof ov !== 'number' || !isFinite(ov)) { errs.push({ row: rn, what: String(row[1]), why: 'has no numeric opening value in column C' }); continue; }
+        if (dupe['open/' + ok]) { errs.push({ row: rn, what: String(row[1]), why: 'is a duplicate row' }); continue; }
+        dupe['open/' + ok] = true; opening[ok] = ov; filled['open/' + ok] = true; continue;
+      } else {
+        lineKey = CO_ALIAS[what];
+        if (!lineKey) { errs.push({ row: rn, what: String(row[1]), why: 'is not a recognised company line item' }); continue; }
+        target = sc.company[lineKey]; kind = 'company/' + lineKey;
+      }
+
+      if (dupe[kind]) { errs.push({ row: rn, what: (row[0] || 'Company') + ' \u00b7 ' + row[1], why: 'is a duplicate row' }); continue; }
+      dupe[kind] = true; filled[kind] = true;
+
+      var bad = [];
+      for (c in colMonth) {
+        var val = row[c];
+        if (val === null || val === undefined || val === '') { target[colMonth[c]] = 0; continue; }
+        if (typeof val !== 'number' || !isFinite(val)) { bad.push(F.MONTHS[colMonth[c]]); continue; }
+        target[colMonth[c]] = val;
+      }
+      if (bad.length) errs.push({ row: rn, what: (row[0] || 'Company') + ' \u00b7 ' + row[1],
+        why: 'has non-numeric cells in ' + bad.join(', ') + '; those months import as zero' });
+    }
+
+    var missing = [];
+    F.CHANNELS.forEach(function (ch) { F.CHANNEL_LINES.forEach(function (l) {
+      if (!filled[ch.key + '/' + l.key]) missing.push(ch.label + ' \u00b7 ' + l.label); }); });
+    F.COMPANY_LINES.forEach(function (l) { if (!filled['company/' + l.key]) missing.push('Company \u00b7 ' + l.label); });
+    if (missing.length) errs.push({ row: '\u2014', what: missing.length + ' row' + (missing.length > 1 ? 's' : '') + ' absent',
+      why: missing.slice(0, 6).join('; ') + (missing.length > 6 ? ' and ' + (missing.length - 6) + ' more' : '') + ' \u2014 imported as zero' });
+
+    return { scenario: sc, opening: opening, errors: errs, rowsRead: Object.keys(filled).length };
+  }
+
+  function handleUpload(scenarioKey, file) {
+    var fr = new FileReader();
+    fr.onerror = function () {
+      S.importErrors = { scenario: scenarioKey, name: file.name, errors: [{ row: '\u2014', what: 'File', why: 'could not be read' }] };
+      render();
+    };
+    fr.onload = function (e) {
+      var res = parseWorkbook(e.target.result);
+      if (!res.scenario) { S.importErrors = { scenario: scenarioKey, name: file.name, errors: res.errors }; render(); return; }
+      S.data.scenarios[scenarioKey] = res.scenario;
+      var k; for (k in res.opening) S.data.opening[k] = res.opening[k];
+      S.data.meta = S.data.meta || {};
+      S.data.meta.source = 'upload';
+      S.source = 'upload'; S.sourceNote = file.name;
+      var bad = validate(S.data);
+      if (bad) { res.errors.unshift({ row: '\u2014', what: 'Import rejected', why: bad }); S.importErrors = { scenario: scenarioKey, name: file.name, errors: res.errors }; render(); return; }
+      S.importErrors = { scenario: scenarioKey, name: file.name, errors: res.errors, rowsRead: res.rowsRead, ok: true };
+      recompute(); save(); render();
+    };
+    fr.readAsArrayBuffer(file);
+  }
+
+  /* ------------------------- shareable copy ------------------------------ */
+  // The markers are assembled at runtime so that this source file never
+  // contains them literally — otherwise the writer would match its own code.
+  var M_OPEN = '<!' + '--DATA-->', M_CLOSE = '<!' + '--/DATA-->';
+  function shareableCopy() {
+    var tag = '<scr' + 'ipt id="embedded-data" type="application/json">' +
+      JSON.stringify(S.data).replace(/<\//g, '<\\/') + '<\/scr' + 'ipt>';
+    var esc1 = function (x) { return x.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); };
+    var re = new RegExp(esc1(M_OPEN) + '[\\s\\S]*?' + esc1(M_CLOSE));
+    var body = M_OPEN + '\n' + tag + '\n' + M_CLOSE;
+    var out = re.test(PRISTINE) ? PRISTINE.replace(re, function () { return body; })
+                                : PRISTINE.replace('</head>', function () { return body + '\n</head>'; });
+    var blob = new Blob([out], { type: 'text/html' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'fpa-dashboard-copy.html'; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 4000);
+  }
+
+  /* ------------------------------ Inputs tab ----------------------------- */
+  function sourceLabel() {
+    return { sample: 'Generated sample', upload: 'Uploaded workbook', stored: 'Saved in this browser',
+             remote: 'data.json', embedded: 'Compiled into this file' }[S.source] || S.source;
+  }
+
+  function inputsTab() {
+    var h = '', i, j;
+    h += '<div class="banner ' + (S.source === 'sample' ? '' : 'ok') + '">Showing <strong>' + esc(sourceLabel()) +
+      '</strong>' + (S.sourceNote ? ' \u2014 ' + esc(S.sourceNote) : '') + '. ' +
+      (S.storage ? 'Changes are saved in this browser, so a refresh keeps them.'
+                 : 'Local storage is ' + esc(S.storageNote || 'unavailable') + ', so changes will not survive a refresh. Save a shareable copy to keep them.') + '</div>';
+
+    if (S.importErrors) {
+      var ie = S.importErrors;
+      h += '<div class="banner ' + (ie.ok ? (ie.errors.length ? '' : 'ok') : 'bad') + '">' +
+        (ie.ok ? 'Imported ' + esc(ie.name) + ' into <strong>' + esc(ie.scenario) + '</strong> \u2014 ' + ie.rowsRead + ' rows read'
+               : 'Could not import ' + esc(ie.name) + ' into <strong>' + esc(ie.scenario) + '</strong>') +
+        (ie.errors.length ? ', ' + ie.errors.length + ' problem' + (ie.errors.length > 1 ? 's' : '') + ' below.' : '.') + '</div>';
+      if (ie.errors.length) h += TABHELP.panel('Import report', esc(ie.name),
+        '<div class="scroll"><table class="errtbl"><thead><tr><th>Row</th><th>What</th><th>Problem</th></tr></thead><tbody>' +
+        ie.errors.map(function (e) { return '<tr><td class="n">' + esc(e.row) + '</td><td>' + esc(e.what) + '</td><td>' + esc(e.why) + '</td></tr>'; }).join('') +
+        '</tbody></table></div><div class="note">Bad rows are reported and left at zero rather than being quietly absorbed, so an import problem shows up here instead of as a wrong number on another tab.</div><div style="height:12px"></div>');
+    }
+
+    h += TABHELP.panel('Excel round trip', 'one sheet \u00b7 column A channel, column B line item, columns C\u2013N Jan\u2013Dec',
+      '<div class="body"><div class="io"><button class="btn" data-act="template">Download template</button>' +
+      '<select id="tplScenario">' + F.SCENARIOS.map(function (s) {
+        return '<option value="' + s.key + '"' + (s.key === S.scenario ? ' selected' : '') + '>' + s.label + ' figures</option>'; }).join('') +
+      '</select><span class="muted">The template downloads populated, so it doubles as an export.</span></div>' +
+      '<h3 class="sec">Upload against the same template</h3>' +
+      F.SCENARIOS.map(function (s) {
+        return '<div class="filerow"><strong>' + s.label + '</strong>' +
+          '<input type="file" accept=".xlsx,.xlsm,.xls" data-upload="' + s.key + '"></div>';
+      }).join('') +
+      '<div class="note" style="padding-left:0">Dates in the header row are written as real Excel dates and read back as serial numbers converted arithmetically in UTC, so the month a figure lands in does not depend on the reader\u2019s time zone.</div>' +
+      '</div>');
+
+    h += TABHELP.panel('Keep and share', '',
+      '<div class="body"><div class="io">' +
+      '<button class="btn" data-act="share">Save a shareable copy</button>' +
+      '<button class="btn ghost" data-act="reset">Reset to sample data</button>' +
+      (S.storage ? '<button class="btn ghost" data-act="clear">Clear saved data</button>' : '') +
+      '</div><div class="note" style="padding-left:0">A shareable copy is a new HTML file with the current figures compiled into it. It opens correctly for anyone, including in a private window, with no upload and no server.' +
+      (/^https?:$/.test(location.protocol) ? ' This page also looks for a <code>data.json</code> beside it once per load.' : '') +
+      '</div></div>');
+
+    // editable primitives
+    var ent = S.inputEntity || 'shopify';
+    var lines = ent === 'company' ? F.COMPANY_LINES : F.CHANNEL_LINES;
+    var vals = ent === 'company' ? S.data.scenarios[S.scenario].company : S.data.scenarios[S.scenario].channel[ent];
+    var grid = '<div class="body"><div class="io"><label class="muted">Entity</label><select id="entSel">' +
+      F.CHANNELS.map(function (c) { return '<option value="' + c.key + '"' + (ent === c.key ? ' selected' : '') + '>' + c.label + '</option>'; }).join('') +
+      '<option value="company"' + (ent === 'company' ? ' selected' : '') + '>Company</option></select>' +
+      '<span class="muted">Editing <strong>' + esc(F.SCENARIOS.filter(function (s) { return s.key === S.scenario; })[0].label) +
+      '</strong>. Every other figure in the dashboard is derived from these.</span></div></div>';
+    grid += '<div class="scroll"><table><thead><tr><th>Line item</th>' +
+      F.MONTHS.map(function (m) { return '<th class="n">' + m + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      lines.map(function (l) {
+        return '<tr><td class="name">' + esc(l.label) + '</td>' + F.MONTHS.map(function (mn, m) {
+          return '<td class="n"><input class="cell" type="number" step="any" data-ent="' + ent + '" data-line="' +
+            l.key + '" data-m="' + m + '" value="' + (vals[l.key][m]) + '"></td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+    grid += '<div class="body"><h3 class="sec">Opening balances, 1 January</h3><div class="io">' +
+      F.OPENING_LINES.map(function (l) {
+        return '<label class="muted" style="display:flex;gap:6px;align-items:center">' + esc(l.label.replace('Opening ', '')) +
+          '<input class="cell" style="border-color:var(--rule)" type="number" step="any" data-open="' + l.key +
+          '" value="' + S.data.opening[l.key] + '"></label>';
+      }).join('') + '</div>' +
+      '<div class="note" style="padding-left:0">These five, plus the grid above, are the whole stored model. Inventory and cash balances for February onward are never stored \u2014 they roll forward, which is why the identities at the foot of the screen cannot drift out.</div></div>';
+    h += TABHELP.panel('Stored primitives', 'the only figures entered anywhere', grid);
+    return h;
+  }
+
+  /* ---------------------------- identity strip --------------------------- */
+  function stripHTML() {
+    var ids = F.identities(A.D(), S.m0, S.m1), ok = true;
+    var cells = ids.map(function (id) {
+      var good = Math.abs(id.delta) < 0.005; if (!good) ok = false;
+      var eq = id.terms.map(function (t, i) {
+        return (i ? ' ' + t.op + ' ' : '') + t.label + ' ' + A.money(t.value, 2);
+      }).join('') + ' = ' + id.expectLabel + ' ' + A.money(id.expect, 2);
+      return '<div class="srow"><span class="' + (good ? 'tick' : 'cross') + '">' + (good ? '\u2713' : '\u2715') +
+        '</span><span class="lbl">' + esc(id.label) + '</span><span class="eq">' + esc(eq) +
+        '</span><span class="d">\u0394 ' + id.delta.toFixed(2) + '</span></div>';
+    }).join('');
+    return '<div class="strip-head"><b>Identity check</b> \u00b7 recomputed live on ' + esc(A.rangeLabel()) +
+      ' \u00b7 ' + esc(F.SCENARIOS.filter(function (s) { return s.key === S.scenario; })[0].label) +
+      ' \u00b7 <span class="' + (ok ? 'tick' : 'cross') + '">' + (ok ? 'all three read zero' : 'a check has failed') +
+      '</span><button data-act="strip">' + (document.body.classList.contains('strip-collapsed') ? 'show' : 'hide') +
+      '</button></div><div class="strip-rows">' + cells + '</div>';
+  }
+
+  /* -------------------------------- render ------------------------------- */
+  function controlsHTML() {
+    var quick = [['YTD', 0, 11], ['H1', 0, 5], ['H2', 6, 11], ['Q4', 9, 11]];
+    return '<div class="ctl"><label for="scn">Scenario</label><select id="scn">' +
+      F.SCENARIOS.map(function (s) { return '<option value="' + s.key + '"' + (s.key === S.scenario ? ' selected' : '') + '>' + s.label + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="ctl"><label for="m0">Months</label><select id="m0">' +
+      F.MONTHS.map(function (m, i) { return '<option value="' + i + '"' + (i === S.m0 ? ' selected' : '') + '>' + m + '</option>'; }).join('') +
+      '</select><span class="muted">to</span><select id="m1">' +
+      F.MONTHS.map(function (m, i) { return '<option value="' + i + '"' + (i === S.m1 ? ' selected' : '') + '>' + m + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="chips">' + quick.map(function (q) {
+        return '<button data-q="' + q[1] + ',' + q[2] + '" aria-pressed="' + (S.m0 === q[1] && S.m1 === q[2]) + '">' + q[0] + '</button>'; }).join('') + '</div>' +
+      (S.tab === 'variance' ? '<div class="ctl"><label for="cmp">Against</label><select id="cmp">' +
+        '<option value="plan"' + (S.compare === 'plan' ? ' selected' : '') + '>Plan</option>' +
+        '<option value="forecast"' + (S.compare === 'forecast' ? ' selected' : '') + '>Forecast</option></select></div>' : '') +
+      '<button class="toggle" data-act="formulas" aria-pressed="' + S.formulas + '">Show formulas</button>';
+  }
+
+  function render() {
+    S.narrow = window.innerWidth < 760;
+    document.body.classList.toggle('formulas', S.formulas);
+    document.getElementById('controls').innerHTML = controlsHTML();
+    document.getElementById('src').textContent = sourceLabel();
+    var nav = document.getElementById('tabs');
+    nav.innerHTML = TABLIST.map(function (t) {
+      return '<button role="tab" data-tab="' + t[0] + '" aria-selected="' + (S.tab === t[0]) + '">' + t[1] + '</button>';
+    }).join('');
+    document.getElementById('view').innerHTML = S.tab === 'inputs' ? inputsTab() : window.TABS[S.tab]();
+    document.getElementById('strip').innerHTML = stripHTML();
+  }
+  function refreshStrip() { document.getElementById('strip').innerHTML = stripHTML(); }
+
+  /* -------------------------------- events ------------------------------- */
+  document.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.id === 'scn') { S.scenario = el.value; render(); }
+    else if (el.id === 'm0') { S.m0 = +el.value; if (S.m1 < S.m0) S.m1 = S.m0; render(); }
+    else if (el.id === 'm1') { S.m1 = +el.value; if (S.m0 > S.m1) S.m0 = S.m1; render(); }
+    else if (el.id === 'cmp') { S.compare = el.value; render(); }
+    else if (el.id === 'entSel') { S.inputEntity = el.value; render(); }
+    else if (el.hasAttribute && el.hasAttribute('data-upload')) {
+      if (el.files && el.files[0]) handleUpload(el.getAttribute('data-upload'), el.files[0]);
+    } else if (el.classList && el.classList.contains('cell')) {
+      var v = parseFloat(el.value); if (!isFinite(v)) v = 0;
+      if (el.hasAttribute('data-open')) S.data.opening[el.getAttribute('data-open')] = v;
+      else {
+        var ent = el.getAttribute('data-ent'), ln = el.getAttribute('data-line'), m = +el.getAttribute('data-m');
+        if (ent === 'company') S.data.scenarios[S.scenario].company[ln][m] = v;
+        else S.data.scenarios[S.scenario].channel[ent][ln][m] = v;
+      }
+      recompute(); save(); refreshStrip();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('button') : null;
+    if (!b) return;
+    if (b.hasAttribute('data-tab')) { S.tab = b.getAttribute('data-tab'); render(); window.scrollTo(0, 0); }
+    else if (b.hasAttribute('data-q')) { var q = b.getAttribute('data-q').split(','); S.m0 = +q[0]; S.m1 = +q[1]; render(); }
+    else if (b.getAttribute('data-act') === 'formulas') { S.formulas = !S.formulas; render(); }
+    else if (b.getAttribute('data-act') === 'strip') { document.body.classList.toggle('strip-collapsed'); refreshStrip(); }
+    else if (b.getAttribute('data-act') === 'template') { downloadTemplate(document.getElementById('tplScenario').value); }
+    else if (b.getAttribute('data-act') === 'share') { shareableCopy(); }
+    else if (b.getAttribute('data-act') === 'reset') {
+      S.data = F.generateSample(); S.source = 'sample'; S.sourceNote = ''; S.importErrors = null;
+      recompute(); save(); render();
+    } else if (b.getAttribute('data-act') === 'clear') {
+      try { localStorage.removeItem(KEY); } catch (err) {}
+      S.data = F.generateSample(); S.source = 'sample'; S.sourceNote = ''; S.importErrors = null;
+      recompute(); render();
+    }
+  });
+
+  var rt; window.addEventListener('resize', function () {
+    clearTimeout(rt); rt = setTimeout(function () {
+      var n = window.innerWidth < 760; if (n !== S.narrow) render();
+    }, 180);
+  });
+
+  /* --------------------------------- boot -------------------------------- */
+  function boot() {
+    S.storage = storageOK();
+    var loaded = null;
+    var tag = document.getElementById('embedded-data');
+    if (tag && tag.textContent.trim().length > 20) {
+      try { var d = JSON.parse(tag.textContent); if (!validate(d)) { loaded = d; S.source = 'embedded'; } } catch (e) {}
+    }
+    if (!loaded && S.storage) {
+      try {
+        var raw = localStorage.getItem(KEY);
+        if (raw) { var d2 = JSON.parse(raw); if (!validate(d2)) { loaded = d2; S.source = 'stored'; } }
+      } catch (e) {}
+    }
+    S.data = loaded || F.generateSample();
+    if (!loaded) S.source = 'sample';
+    recompute(); render();
+
+    // exactly one data.json fetch per load, only when hosted
+    if (!loaded && /^https?:$/.test(location.protocol) && typeof fetch === 'function') {
+      fetch('data.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d) return;
+          var bad = validate(d);
+          if (bad) { S.sourceNote = 'data.json ignored \u2014 ' + bad; render(); return; }
+          S.data = d; S.source = 'remote'; S.sourceNote = ''; recompute(); render();
+        }).catch(function () {});
+    }
+  }
+  boot();
+}());
+
+</script>
+</body>
+</html>
